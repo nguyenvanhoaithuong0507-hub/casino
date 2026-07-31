@@ -7,18 +7,13 @@ import Home from "@/pages/home";
 import Promotions from "@/pages/promotions";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
-import { Layout } from "@/components/layout/layout";
+import Deposit from "@/pages/deposit";
+import Withdrawal from "@/pages/withdrawal";
+import Profile from "@/pages/profile";
+import History from "@/pages/history";
 import React, { useEffect } from "react";
 
 const queryClient = new QueryClient();
-
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div className="flex items-center justify-center min-h-[50vh] text-muted-foreground">
-      {title} - Coming soon
-    </div>
-  );
-}
 
 function Router() {
   return (
@@ -27,22 +22,10 @@ function Router() {
       <Route path="/promotions" component={Promotions} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
-      
-      {/* Tab stubs */}
-      <Route path="/deposit">
-        {() => (
-          <Layout>
-            <PlaceholderPage title="Nạp tiền" />
-          </Layout>
-        )}
-      </Route>
-      <Route path="/history">
-        {() => (
-          <Layout>
-            <PlaceholderPage title="Lịch sử" />
-          </Layout>
-        )}
-      </Route>
+      <Route path="/deposit" component={Deposit} />
+      <Route path="/withdrawal" component={Withdrawal} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/history" component={History} />
       
       <Route component={NotFound} />
     </Switch>

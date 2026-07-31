@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>HUYNH THUONG Casino</title>
+  <meta name="description" content="HUYNH THUONG Casino — Song bai truc tuyen hang dau" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-main:   #13131F;
+      --bg-dark:   #0D0D1A;
+      --bg-card:   #1A1A2E;
+      --gold:      #C9A84C;
+      --gold-lt:   #F5D787;
+      --gold-glow: rgba(201,168,76,0.3);
+      --red:       #C0272D;
+      --text:      #fff;
+      --text-dim:  rgba(255,255,255,0.4);
+      --border:    rgba(201,168,76,0.2);
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ── WRAPPER ── */
+    #app {
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg-main);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .brand {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+    }
+    .header-right { display: flex; align-items: center; gap: 6px; }
+    .btn-outline {
+      background: none;
+      border: 1px solid var(--gold);
+      border-radius: 5px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 11px;
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+      transition: background 0.15s;
+    }
+    .btn-outline:hover { background: rgba(201,168,76,0.1); }
+    .btn-solid {
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      border: none;
+      border-radius: 5px;
+      color: #0D0D1A;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 11px;
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+    }
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255,255,255,0.6);
+      display: flex;
+      padding: 2px;
+    }
+
+    /* ── MAIN SCROLL ── */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 64px;
+      -webkit-overflow-scrolling: touch;
+    }
+    main::-webkit-scrollbar { display: none; }
+
+    /* ── BANNER CAROUSEL ── */
+    .carousel { overflow: hidden; position: relative; }
+    .carousel-track { display: flex; transition: transform 0.45s ease; }
+    .carousel-slide { flex: 0 0 100%; min-width: 0; }
+    .carousel-slide img { width: 100%; aspect-ratio: 21/9; object-fit: cover; display: block; }
+    .dots { display: flex; gap: 4px; justify-content: center; padding: 6px 0 4px; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.25s; }
+    .dot.active { background: var(--gold); width: 14px; border-radius: 3px; }
+
+    /* ── TICKER ── */
+    .ticker-bar {
+      display: flex;
+      align-items: center;
+      background: rgba(201,168,76,0.07);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 5px 10px;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .ticker-wrap { flex: 1; overflow: hidden; }
+    @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+    .ticker-text {
+      display: inline-block;
+      white-space: nowrap;
+      font-size: 12px;
+      color: #e0c97a;
+      animation: ticker 22s linear infinite;
+    }
+
+    /* ── JACKPOT ── */
+    .jackpot-wrap { padding: 10px 10px 0; }
+    .jackpot-box {
+      border-radius: 10px;
+      background: linear-gradient(90deg, #0D0D1A, #1A1A2E, #0D0D1A);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0 12px;
+    }
+    .jackpot-label {
+      font-size: 10px;
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .jackpot-num {
+      font-family: monospace;
+      font-size: 34px;
+      font-weight: 900;
+      background: linear-gradient(180deg, #FFE566, #D4AF37, #B8860B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── HALL TABS ── */
+    .hall-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin-top: 10px;
+    }
+    .hall-tabs::-webkit-scrollbar { display: none; }
+    .hall-tab {
+      flex: 0 0 auto;
+      min-width: 58px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      padding: 10px 14px 7px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      margin-bottom: -1px;
+      transition: border-color 0.15s;
+    }
+    .hall-tab.active { border-bottom-color: var(--gold); }
+    .hall-tab .tab-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .hall-tab.active .tab-name { color: var(--gold); }
+    .hall-tab .tab-sub {
+      font-size: 9px;
+      color: rgba(255,255,255,0.2);
+      font-weight: 400;
+      transition: color 0.15s;
+    }
+    .hall-tab.active .tab-sub { color: rgba(201,168,76,0.6); }
+    .fav-tab {
+      margin-left: auto;
+      flex: 0 0 auto;
+      min-width: 46px;
+    }
+
+    /* ── HALL LABEL ── */
+    .hall-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px 5px;
+    }
+    .hall-accent { width: 3px; height: 16px; background: linear-gradient(var(--gold), var(--gold-lt)); border-radius: 2px; }
+    .hall-title {
+      font-family: 'Oswald', sans-serif;
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .hall-count { font-size: 11px; color: var(--text-dim); margin-left: 2px; }
+
+    /* ── GAME GRID ── */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 0 8px 16px;
+    }
+    .game-card {
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 3/4;
+      cursor: pointer;
+      background: var(--bg-card);
+      border: 1px solid rgba(201,168,76,0.08);
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .game-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); }
+    .game-card:active { transform: scale(0.97); }
+    .game-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .provider-badge {
+      position: absolute;
+      top: 4px; left: 4px;
+      background: rgba(201,168,76,0.85);
+      color: #0D0D1A;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      line-height: 14px;
+    }
+    .fav-btn {
+      position: absolute;
+      top: 4px; right: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+      display: flex;
+    }
+    .game-name {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.88));
+      color: #fff;
+      font-size: 10px;
+      font-weight: 500;
+      text-align: center;
+      padding: 14px 4px 5px;
+      line-height: 1.2;
+    }
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    .game-card:hover .play-overlay { opacity: 1; background: rgba(0,0,0,0.45); }
+    .play-btn {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.92);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 16px rgba(201,168,76,0.5);
+    }
+    .empty-state {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 48px 0;
+      color: rgba(201,168,76,0.4);
+      font-size: 13px;
+    }
+
+    /* ── BOTTOM NAV ── */
+    nav {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      background: var(--bg-dark);
+      border-top: 1px solid var(--border);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 7px 0;
+      cursor: pointer;
+      gap: 2px;
+      text-decoration: none;
+    }
+    .nav-item span { font-size: 10px; color: var(--text-dim); font-weight: 400; line-height: 1; }
+    .nav-item.active span { color: var(--gold); }
+    .nav-deposit {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      margin-top: -18px;
+      gap: 2px;
+    }
+    .deposit-circle {
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FFE566, #D4AF37);
+      border: 3px solid var(--bg-dark);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 16px rgba(255,229,102,0.45);
+    }
+    .nav-deposit span { font-size: 10px; color: var(--text-dim); line-height: 1; }
+
+    /* ── DRAWER ── */
+    #drawer-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 49;
+    }
+    #drawer {
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      width: 78%; max-width: 300px;
+      background: var(--bg-dark);
+      border-right: 1px solid var(--border);
+      z-index: 50;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.22s ease;
+    }
+    #drawer.open { transform: translateX(0); }
+    .drawer-head {
+      background: var(--bg-card);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .drawer-user { display: flex; align-items: center; gap: 10px; }
+    .user-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--bg-main);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .drawer-name { font-size: 13px; font-weight: 600; color: #fff; }
+    .drawer-login { font-size: 11px; color: var(--gold); cursor: pointer; }
+    .offer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 10px 12px;
+    }
+    .offer-item {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .offer-icon {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .offer-label { font-size: 11px; color: #fff; line-height: 1.2; }
+    .drawer-section { border-top: 1px solid var(--border); }
+    .drawer-section-title {
+      font-size: 11px;
+      color: rgba(201,168,76,0.6);
+      font-weight: 600;
+      padding: 10px 14px 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .drawer-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .drawer-link:hover { background: rgba(255,255,255,0.03); }
+    .drawer-link-left { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #fff; }
+    .lang-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px;
+      margin: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .lang-left { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+
+    /* Utility */
+    button { font-family: 'Roboto', sans-serif; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <button class="icon-btn" onclick="openDrawer()" aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="brand">HUYNH<br>THUONG</div>
+    </div>
+    <div class="header-right">
+      <button class="btn-outline">Dang nhap</button>
+      <button class="btn-solid">Dang ky</button>
+      <button class="icon-btn" aria-label="Tim kiem">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+      <div style="width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0">
+        <svg viewBox="0 0 30 20" width="22" height="22">
+          <rect width="30" height="20" fill="#DA251D"/>
+          <polygon points="15,4 16.76,9.42 22.36,9.42 17.8,12.58 19.56,18 15,14.84 10.44,18 12.2,12.58 7.64,9.42 13.24,9.42" fill="#FFFF00"/>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- BANNER CAROUSEL -->
+    <div class="carousel" id="carousel">
+      <div class="carousel-track" id="track">
+        <div class="carousel-slide"><img src="https://xgamecdn.com/kp/202604/TENL9HFvJ1JW77vO.png" alt="Banner 1" loading="eager" onerror="this.style.display='none'"/></div>
+        <div class="carousel-slide"><img src="https://xgamecdn.com/kp/202604/vo7Iww95-46d-_XC.png" alt="Banner 2" loading="lazy" onerror="this.style.display='none'"/></div>
+        <div class="carousel-slide"><img src="https://xgamecdn.com/kp/202604/i2tX9HzTKt61pL5h.png" alt="Banner 3" loading="lazy" onerror="this.style.display='none'"/></div>
+        <div class="carousel-slide"><img src="https://xgamecdn.com/kp/202604/2Q0EpeG-e8_uO1mG.png" alt="Banner 4" loading="lazy" onerror="this.style.display='none'"/></div>
+      </div>
+      <div class="dots" id="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <!-- TICKER -->
+    <div class="ticker-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#C9A84C" style="flex-shrink:0"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+      <div class="ticker-wrap">
+        <span class="ticker-text">Chuc mung ban da den voi HUYNH THUONG Casino! Nap lan dau nhan 150% thuong len den 5,000,000 VND. Mung ngay khai truong song bai va nhan ngay uu dai dac biet. Chuc cac ban choi game vui ve va may man! ★★★</span>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#C9A84C" style="flex-shrink:0"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+    </div>
+
+    <!-- JACKPOT -->
+    <div class="jackpot-wrap">
+      <div class="jackpot-box">
+        <div class="jackpot-label">Jackpot Pool</div>
+        <div class="jackpot-num" id="jackpot">621.100.219</div>
+      </div>
+    </div>
+
+    <!-- HALL TABS -->
+    <div class="hall-tabs" id="hallTabs">
+      <button class="hall-tab active" data-hall="jili" onclick="switchHall('jili',this)">
+        <span class="tab-name">JILI</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="pg" onclick="switchHall('pg',this)">
+        <span class="tab-name">PG</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="wg" onclick="switchHall('wg',this)">
+        <span class="tab-name">WG</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="fc" onclick="switchHall('fc',this)">
+        <span class="tab-name">FC</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="jdb" onclick="switchHall('jdb',this)">
+        <span class="tab-name">JDB</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="pp" onclick="switchHall('pp',this)">
+        <span class="tab-name">PP</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab fav-tab" data-hall="fav" onclick="switchHall('fav',this)" style="min-width:46px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,255,255,0.35)" id="favIcon">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+        <span class="tab-sub">YEU THICH</span>
+      </button>
+    </div>
+
+    <!-- HALL LABEL -->
+    <div class="hall-label">
+      <div class="hall-accent"></div>
+      <span class="hall-title" id="hallTitle">JILI SLOT</span>
+      <span class="hall-count" id="hallCount">15 tro choi</span>
+    </div>
+
+    <!-- GAME GRID -->
+    <div class="game-grid" id="gameGrid"></div>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav>
+    <a class="nav-item active" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#C9A84C"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>Trang chu</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)"><path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Khuyen mai</span>
+    </a>
+    <div class="nav-deposit">
+      <div class="deposit-circle">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#0D0D1A"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H7l5-5 5 5h-4v4z"/></svg>
+      </div>
+      <span>Nap tien</span>
+    </div>
+    <a class="nav-item" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+      <span>Lich su</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      <span>Toi</span>
+    </a>
+  </nav>
+
+</div>
+
+<!-- DRAWER OVERLAY -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- DRAWER -->
+<div id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-user">
+      <div class="user-avatar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(201,168,76,0.7)"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      </div>
+      <div>
+        <div class="drawer-name">Khach</div>
+        <div class="drawer-login">Dang nhap / Dang ky &gt;</div>
+      </div>
+    </div>
+    <button class="icon-btn" onclick="closeDrawer()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Offer center -->
+  <div class="drawer-section-title" style="padding-top:12px">Trung tam uu dai</div>
+  <div class="offer-grid">
+    <div class="offer-item"><div class="offer-icon" style="background:#5B6CF6"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div><span class="offer-label">Su kien</span></div>
+    <div class="offer-item"><div class="offer-icon" style="background:#2EC97C"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div><span class="offer-label">Nhiem vu</span></div>
+    <div class="offer-item"><div class="offer-icon" style="background:#F5A623"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div><span class="offer-label">Hoan tra</span></div>
+    <div class="offer-item"><div class="offer-icon" style="background:#E85D5D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div><span class="offer-label">Nhan thuong</span></div>
+    <div class="offer-item"><div class="offer-icon" style="background:#8B3FD9"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg></div><span class="offer-label">VIP</span></div>
+    <div class="offer-item"><div class="offer-icon" style="background:#E87D2F"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div><span class="offer-label">Lich su</span></div>
+    <div class="offer-item"><div class="offer-icon" style="background:#E860B3"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg></div><span class="offer-label">Lai suat</span></div>
+    <div class="offer-item"><div class="offer-icon" style="background:#27A660"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div><span class="offer-label">Quy</span></div>
+  </div>
+
+  <!-- Bottom links -->
+  <div class="drawer-section">
+    <div class="drawer-section-title">Ho tro</div>
+    <div class="drawer-link">
+      <div class="drawer-link-left">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#C9A84C"><path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z"/></svg>
+        CSKH
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="drawer-link">
+      <div class="drawer-link-left">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#C9A84C"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+        FAQ
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div class="drawer-link">
+      <div class="drawer-link-left">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#C9A84C"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        Gioi thieu
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+  </div>
+
+  <div style="padding:12px;margin-top:auto">
+    <div class="lang-row">
+      <div class="lang-left">
+        <svg viewBox="0 0 30 20" width="22" height="16" style="border-radius:2px">
+          <rect width="30" height="20" fill="#DA251D"/>
+          <polygon points="15,4 16.76,9.42 22.36,9.42 17.8,12.58 19.56,18 15,14.84 10.44,18 12.2,12.58 7.64,9.42 13.24,9.42" fill="#FFFF00"/>
+        </svg>
+        Tieng Viet
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+  </div>
+</div>
+
+<script>
+const CDN = 'https://xgamecdn.com';
+
+// ── GAME DATA ──────────────────────────────────────────────────
+const HALLS = {
+  jili: {
+    label: 'JILI SLOT',
+    games: [
+      { id:101, name:'Fortune Gems',    provider:'JILI', img:`${CDN}/game/OM/g/JL/3/200/0.png` },
+      { id:102, name:'Super Ace',       provider:'JILI', img:`${CDN}/game/OM/g/JL/3/204/0.png` },
+      { id:103, name:'Boxing King',     provider:'JILI', img:`${CDN}/game/OM/g/JL/3/208/0.png` },
+      { id:104, name:'Mega Ace',        provider:'JILI', img:`${CDN}/game/OM/g/JL/3/209/0.png` },
+      { id:105, name:'Lucky Coming',    provider:'JILI', img:`${CDN}/game/OM/g/JL/3/214/0.png` },
+      { id:106, name:'Samba',           provider:'JILI', img:`${CDN}/game/OM/g/JL/3/216/0.png` },
+      { id:107, name:'Dragon Treasure', provider:'JILI', img:`${CDN}/game/OM/g/JL/3/217/0.png` },
+      { id:108, name:'Golden Empire',   provider:'JILI', img:`${CDN}/game/OM/g/JL/3/223/0.png` },
+      { id:109, name:'Crazy FaFaFa',    provider:'JILI', img:`${CDN}/game/OM/g/JL/3/224/0.png` },
+      { id:110, name:'Money Coming',    provider:'JILI', img:`${CDN}/game/OM/g/JL/3/225/0.png` },
+      { id:111, name:'Wild Ace',        provider:'JILI', img:`${CDN}/game/OM/g/JL/3/226/0.png` },
+      { id:112, name:'Charge Buffalo',  provider:'JILI', img:`${CDN}/game/OM/g/JL/3/228/0.png` },
+      { id:113, name:'RomaX',           provider:'JILI', img:`${CDN}/game/OM/g/JL/3/229/0.png` },
+      { id:114, name:'Jungle King',     provider:'JILI', img:`${CDN}/game/OM/g/JL/3/230/0.png` },
+      { id:115, name:'Fortune Tree',    provider:'JILI', img:`${CDN}/game/OM/g/JL/3/232/0.png` },
+    ]
+  },
+  pg: {
+    label: 'PG SLOT',
+    games: [
+      { id:201, name:'Ways of the Qilin',       provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31047/0.png` },
+      { id:202, name:'Rise of Apollo',           provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31048/0.png` },
+      { id:203, name:'Ganesha Fortune',          provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31042/0.png` },
+      { id:204, name:"Egypt's Book of Mystery",  provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31040/0.png` },
+      { id:205, name:'Double Happiness',         provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31033/0.png` },
+      { id:206, name:'Phoenix Rises',            provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31031/0.png` },
+      { id:207, name:'Mahjong Ways',             provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31030/0.png` },
+      { id:208, name:'Lucky Neko',               provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31026/0.png` },
+      { id:209, name:'Treasures of Aztec',       provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31007/0.png` },
+      { id:210, name:'Candy Burst',              provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31009/0.png` },
+      { id:211, name:'Dragon Tiger Luck',        provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31010/0.png` },
+      { id:212, name:'Prosperity Fortune Tree',  provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31011/0.png` },
+      { id:213, name:'Gem Saviour Sword',        provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31012/0.png` },
+      { id:214, name:'Shaolin Soccer',           provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31013/0.png` },
+      { id:215, name:'Hood vs Wolf',             provider:'PG', img:`${CDN}/game/OM/g/PGC/3/31014/0.png` },
+    ]
+  },
+  wg: {
+    label: 'WG SLOT',
+    games: [
+      { id:301, name:'Fortune Ox',        provider:'WG', img:`${CDN}/game/OM/g/WG/3/41015/0.png` },
+      { id:302, name:'Dragon Hatch',      provider:'WG', img:`${CDN}/game/OM/g/WG/3/41003/0.png` },
+      { id:303, name:'Queen of Bounty',   provider:'WG', img:`${CDN}/game/OM/g/WG/3/41004/0.png` },
+      { id:304, name:'Galactic Gems',     provider:'WG', img:`${CDN}/game/OM/g/WG/3/41005/0.png` },
+      { id:305, name:'Piggy Gold',        provider:'WG', img:`${CDN}/game/OM/g/WG/3/41007/0.png` },
+      { id:306, name:'Leprechaun Riches', provider:'WG', img:`${CDN}/game/OM/g/WG/3/41010/0.png` },
+      { id:307, name:'Wild Fireworks',    provider:'WG', img:`${CDN}/game/OM/g/WG/3/41012/0.png` },
+      { id:308, name:'Buffalo Win',       provider:'WG', img:`${CDN}/game/OM/g/WG/3/41016/0.png` },
+      { id:309, name:'Golden Dragon',     provider:'WG', img:`${CDN}/game/OM/g/WG/3/41020/0.png` },
+      { id:310, name:'Jungle Delight',    provider:'WG', img:`${CDN}/game/OM/g/WG/3/41023/0.png` },
+      { id:311, name:'Aztec Temple',      provider:'WG', img:`${CDN}/game/OM/g/WG/3/41025/0.png` },
+      { id:312, name:'Ocean Riches',      provider:'WG', img:`${CDN}/game/OM/g/WG/3/41034/0.png` },
+      { id:313, name:'Lucky Zodiac',      provider:'WG', img:`${CDN}/game/OM/g/WG/3/41035/0.png` },
+      { id:314, name:"Panda's Fortune",   provider:'WG', img:`${CDN}/game/OM/g/WG/3/41037/0.png` },
+      { id:315, name:'Gem Queen',         provider:'WG', img:`${CDN}/game/OM/g/WG/3/41038/0.png` },
+    ]
+  },
+  fc: {
+    label: 'FC SLOT',
+    games: [
+      { id:401, name:'Caishen Wins',   provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31226/0.png` },
+      { id:402, name:'Dragon Gold',    provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31219/0.png` },
+      { id:403, name:'Money Cat',      provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31262/0.png` },
+      { id:404, name:'Tiger Fortune',  provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31201/0.png` },
+      { id:405, name:'Jade Emperor',   provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31202/0.png` },
+      { id:406, name:'Phoenix Queen',  provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31203/0.png` },
+      { id:407, name:'Lucky Koi',      provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31204/0.png` },
+      { id:408, name:'Neko Fortune',   provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31205/0.png` },
+      { id:409, name:'Dragon Pearl',   provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31206/0.png` },
+      { id:410, name:'Golden Toad',    provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31207/0.png` },
+      { id:411, name:'Royal Court',    provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31208/0.png` },
+      { id:412, name:'Mystic Gems',    provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31209/0.png` },
+      { id:413, name:'Fortune Lion',   provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31210/0.png` },
+      { id:414, name:'Star Harvest',   provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31211/0.png` },
+      { id:415, name:'Golden Palace',  provider:'FC', img:`${CDN}/game/OM/g/NJL/3/31214/0.png` },
+    ]
+  },
+  jdb: {
+    label: 'JDB SLOT',
+    games: [
+      { id:501, name:'Monkey King',     provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1404100/0.png` },
+      { id:502, name:'Sea Emperor',     provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1404200/0.png` },
+      { id:503, name:'Lucky 777',       provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1404300/0.png` },
+      { id:504, name:'Fishing Master',  provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1404400/0.png` },
+      { id:505, name:'JDB Treasure',    provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1404500/0.png` },
+      { id:506, name:'Golden Dragon',   provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1404600/0.png` },
+      { id:507, name:'Magic Lamp',      provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1404700/0.png` },
+      { id:508, name:'Fortune God',     provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1404800/0.png` },
+      { id:509, name:'Dragon Palace',   provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1405000/0.png` },
+      { id:510, name:'Wild Safari',     provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1405100/0.png` },
+      { id:511, name:'Rooster Warrior', provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1405200/0.png` },
+      { id:512, name:'Happy Rich Year', provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1403300/0.png` },
+      { id:513, name:'Dragon Ball',     provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1403400/0.png` },
+      { id:514, name:'Tiger Warrior',   provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1403500/0.png` },
+      { id:515, name:'Treasure Hunt',   provider:'JDB', img:`${CDN}/game/OM/g/JDB/3/1403600/0.png` },
+    ]
+  },
+  pp: {
+    label: 'PP SLOT',
+    games: [
+      { id:601, name:'Sweet Bonanza',       provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs20pbonanza/0.png` },
+      { id:602, name:'Starlight Princess',  provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs20starlightx/0.png` },
+      { id:603, name:'Big Bass Bonanza',    provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs10txbigbass/0.png` },
+      { id:604, name:'Dog House Megaways',  provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs20doghouse/0.png` },
+      { id:605, name:'Fruit Party',         provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs20fruitparty/0.png` },
+      { id:606, name:'Zeus vs Hades',       provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs15godsofwar/0.png` },
+      { id:607, name:'Lucky Tiger',         provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs5luckytig/0.png` },
+      { id:608, name:'Pyramid Bonanza',     provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs25pyramid/0.png` },
+      { id:609, name:"Cleopatra's Gold",    provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs40cleoeye/0.png` },
+      { id:610, name:'Wild Bandito',        provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs25wildies/0.png` },
+      { id:611, name:'Mahjong Wins Bonus',  provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs1024mjwinbns/0.png` },
+      { id:612, name:'Rainbow Gold',        provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs20rainbowrsh/0.png` },
+      { id:613, name:'Gold Fish',           provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs10goldfish/0.png` },
+      { id:614, name:'Sugar Rush',          provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs20sugarrush/0.png` },
+      { id:615, name:'Fruit Party 2',       provider:'PP', img:`${CDN}/game/OM/g/PP/3/vs20fruitswx/0.png` },
+    ]
+  }
+};
+
+// ── STATE ──────────────────────────────────────────────────────
+let currentHall = 'jili';
+let showFav = false;
+let favorites = new Set([101, 203, 301, 501, 601]);
+let jackpotVal = 621100219;
+
+// ── JACKPOT ────────────────────────────────────────────────────
+setInterval(() => {
+  jackpotVal += Math.floor(Math.random() * 300 + 50);
+  document.getElementById('jackpot').textContent = jackpotVal.toLocaleString('vi-VN');
+}, 1500);
+
+// ── CAROUSEL ───────────────────────────────────────────────────
+let slideIdx = 0;
+const slides = document.querySelectorAll('.carousel-slide');
+const dotEls = document.querySelectorAll('.dot');
+function goSlide(n) {
+  slideIdx = (n + slides.length) % slides.length;
+  document.getElementById('track').style.transform = `translateX(-${slideIdx * 100}%)`;
+  dotEls.forEach((d,i) => d.classList.toggle('active', i === slideIdx));
+}
+setInterval(() => goSlide(slideIdx + 1), 3200);
+
+// ── GAME RENDER ────────────────────────────────────────────────
+function renderGames() {
+  const grid = document.getElementById('gameGrid');
+  const titleEl = document.getElementById('hallTitle');
+  const countEl = document.getElementById('hallCount');
+
+  let games;
+  if (showFav) {
+    games = Object.values(HALLS).flatMap(h => h.games).filter(g => favorites.has(g.id));
+    titleEl.textContent = 'YEU THICH';
+    countEl.textContent = games.length + ' tro choi';
+  } else {
+    const hall = HALLS[currentHall];
+    games = hall.games;
+    titleEl.textContent = hall.label;
+    countEl.textContent = games.length + ' tro choi';
+  }
+
+  if (!games.length) {
+    grid.innerHTML = '<div class="empty-state">Chua co game nao trong danh sach yeu thich</div>';
+    return;
+  }
+
+  grid.innerHTML = games.map(g => `
+    <div class="game-card" onclick="alert('Dang nhap de choi ${g.name}')">
+      <img src="${g.img}" alt="${g.name}" loading="lazy"
+        onerror="this.src='https://placehold.co/200x267/1A1A2E/C9A84C?text=${encodeURIComponent(g.name)}'"/>
+      <div class="provider-badge">${g.provider}</div>
+      <button class="fav-btn" onclick="event.stopPropagation();toggleFav(${g.id})" id="fav-${g.id}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="${favorites.has(g.id) ? '#C9A84C' : 'rgba(255,255,255,0.5)'}">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+      </button>
+      <div class="game-name">${g.name}</div>
+      <div class="play-overlay">
+        <div class="play-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#0D0D1A"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleFav(id) {
+  favorites.has(id) ? favorites.delete(id) : favorites.add(id);
+  renderGames();
+}
+
+// ── HALL SWITCH ────────────────────────────────────────────────
+function switchHall(hall, btn) {
+  document.querySelectorAll('.hall-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  if (hall === 'fav') {
+    showFav = true;
+  } else {
+    showFav = false;
+    currentHall = hall;
+  }
+  renderGames();
+}
+
+// ── NAV ────────────────────────────────────────────────────────
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── DRAWER ────────────────────────────────────────────────────
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').style.display = 'block';
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').style.display = 'none';
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+renderGames();
+</script>
+</body>
+</html>

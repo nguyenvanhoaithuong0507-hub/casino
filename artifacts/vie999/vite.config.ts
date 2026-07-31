@@ -4,48 +4,42 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-const rawPort = process.env.PORT;
+// Use sensible defaults for PORT and BASE_PATH
+const port = Number(process.env.PORT || 5173);
+const basePath = process.env.BASE_PATH || "/";
 
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
+const plugins = [
+  react(),
+  tailwindcss(),
+  runtimeErrorOverlay(),
+];
 
-const port = Number(rawPort);
+// Only add Replit plugins if explicitly in Replit environment
+if (process.env.REPL_ID) {
+  try {
+    // Dynamic import for Replit cartographer plugin
+    const cartographerPlugin = require("@replit/vite-plugin-cartographer");
+    plugins.push(
+      cartographerPlugin.cartographer({
+        root: path.resolve(import.meta.dirname, ".."),
+      })
+    );
+  } catch (e) {
+    // Plugin not available, continue without it
+  }
 
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
-}
-
-const basePath = process.env.BASE_PATH;
-
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
+  try {
+    // Dynamic import for Replit dev banner plugin
+    const devBannerPlugin = require("@replit/vite-plugin-dev-banner");
+    plugins.push(devBannerPlugin.devBanner());
+  } catch (e) {
+    // Plugin not available, continue without it
+  }
 }
 
 export default defineConfig({
   base: basePath,
-  plugins: [
-    react(),
-    tailwindcss(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer({
-              root: path.resolve(import.meta.dirname, ".."),
-            }),
-          ),
-          await import("@replit/vite-plugin-dev-banner").then((m) =>
-            m.devBanner(),
-          ),
-        ]
-      : []),
-  ],
+  plugins,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
@@ -60,7 +54,7 @@ export default defineConfig({
   },
   server: {
     port,
-    strictPort: true,
+    strictPort: false,
     host: "0.0.0.0",
     allowedHosts: true,
     fs: {

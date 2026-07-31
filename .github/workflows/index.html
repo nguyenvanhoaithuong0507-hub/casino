@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>HUYNH THUONG Casino</title>
+  <meta name="description" content="HUYNH THUONG Casino — Song bai truc tuyen hang dau" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-main:   #13131F;
+      --bg-dark:   #0D0D1A;
+      --bg-card:   #1A1A2E;
+      --gold:      #C9A84C;
+      --gold-lt:   #F5D787;
+      --gold-glow: rgba(201,168,76,0.3);
+      --red:       #C0272D;
+      --text:      #fff;
+      --text-dim:  rgba(255,255,255,0.4);
+      --border:    rgba(201,168,76,0.2);
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ── WRAPPER ── */
+    #app {
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg-main);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .brand {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+    }
+    .header-right { display: flex; align-items: center; gap: 6px; }
+    .btn-outline {
+      background: none;
+      border: 1px solid var(--gold);
+      border-radius: 5px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 11px;
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+      transition: background 0.15s;
+    }
+    .btn-outline:hover { background: rgba(201,168,76,0.1); }
+    .btn-solid {
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      border: none;
+      border-radius: 5px;
+      color: #0D0D1A;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 11px;
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+    }
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255,255,255,0.6);
+      display: flex;
+      padding: 2px;
+    }
+
+    /* ── MAIN SCROLL ── */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 64px;
+      -webkit-overflow-scrolling: touch;
+    }
+    main::-webkit-scrollbar { display: none; }
+
+    /* ── BANNER CAROUSEL ── */
+    .carousel { overflow: hidden; position: relative; }
+    .carousel-track { display: flex; transition: transform 0.45s ease; }
+    .carousel-slide { flex: 0 0 100%; min-width: 0; }
+    .carousel-slide img { width: 100%; aspect-ratio: 21/9; object-fit: cover; display: block; }
+    .dots { display: flex; gap: 4px; justify-content: center; padding: 6px 0 4px; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.25s; }
+    .dot.active { background: var(--gold); width: 14px; border-radius: 3px; }
+
+    /* ── TICKER ── */
+    .ticker-bar {
+      display: flex;
+      align-items: center;
+      background: rgba(201,168,76,0.07);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 5px 10px;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .ticker-wrap { flex: 1; overflow: hidden; }
+    @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+    .ticker-text {
+      display: inline-block;
+      white-space: nowrap;
+      font-size: 12px;
+      color: #e0c97a;
+      animation: ticker 22s linear infinite;
+    }
+
+    /* ── JACKPOT ── */
+    .jackpot-wrap { padding: 10px 10px 0; }
+    .jackpot-box {
+      border-radius: 10px;
+      background: linear-gradient(90deg, #0D0D1A, #1A1A2E, #0D0D1A);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0 12px;
+    }
+    .jackpot-label {
+      font-size: 10px;
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .jackpot-num {
+      font-family: monospace;
+      font-size: 34px;
+      font-weight: 900;
+      background: linear-gradient(180deg, #FFE566, #D4AF37, #B8860B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── HALL TABS ── */
+    .hall-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin-top: 10px;
+    }
+    .hall-tabs::-webkit-scrollbar { display: none; }
+    .hall-tab {
+      flex: 0 0 auto;
+      min-width: 58px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      padding: 10px 14px 7px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      margin-bottom: -1px;
+      transition: border-color 0.15s;
+    }
+    .hall-tab.active { border-bottom-color: var(--gold); }
+    .hall-tab .tab-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .hall-tab.active .tab-name { color: var(--gold); }
+    .hall-tab .tab-sub {
+      font-size: 9px;
+      color: rgba(255,255,255,0.2);
+      font-weight: 400;
+      transition: color 0.15s;
+    }
+    .hall-tab.active .tab-sub { color: rgba(201,168,76,0.6); }
+    .fav-tab {
+      margin-left: auto;
+      flex: 0 0 auto;
+      min-width: 46px;
+    }
+
+    /* ── HALL LABEL ── */
+    .hall-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px 5px;
+    }
+    .hall-accent { width: 3px; height: 16px; background: linear-gradient(var(--gold), var(--gold-lt)); border-radius: 2px; }
+    .hall-title {
+      font-family: 'Oswald', sans-serif;
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .hall-count { font-size: 11px; color: var(--text-dim); margin-left: 2px; }
+
+    /* ── GAME GRID ── */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 0 8px 16px;
+    }
+    .game-card {
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 3/4;
+      cursor: pointer;
+      background: var(--bg-card);
+      border: 1px solid rgba(201,168,76,0.08);
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .game-card:hover { border-color: rgba(201,168,76,0.35); transform: translateY(-2px); }
+    .game-card:active { transform: scale(0.97); }
+    .game-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .provider-badge {
+      position: absolute;
+      top: 4px; left: 4px;
+      background: rgba(201,168,76,0.85);
+      color: #0D0D1A;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      line-height: 14px;
+    }
+    .fav-btn {
+      position: absolute;
+      top: 4px; right: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+      display: flex;
+    }
+    .game-name {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.88));
+      color: #fff;
+      font-size: 10px;
+      font-weight: 500;
+      text-align: center;
+      padding: 14px 4px 5px;
+      line-height: 1.2;
+    }
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    .game-card:hover .play-overlay { opacity: 1; background: rgba(0,0,0,0.45); }
+    .play-btn {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.92);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 16px rgba(201,168,76,0.5);
+    }
+    .empty-state {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 48px 0;
+      color: rgba(201,168,76,0.4);
+      font-size: 13px;
+    }
+
+    /* ── BOTTOM NAV ── */
+    nav {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      background: var(--bg-dark);
+      border-top: 1px solid var(--border);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 7px 0;
+      cursor: pointer;
+      gap: 2px;
+      text-decoration: none;
+    }
+    .nav-item span { font-size: 10px; color: var(--text-dim); font-weight: 400; line-height: 1; }
+    .nav-item.active span { color: var(--gold); }
+    .nav-deposit {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      margin-top: -18px;
+      gap: 2px;
+    }
+    .deposit-circle {
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FFE566, #D4AF37);
+      border: 3px solid var(--bg-dark);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 16px rgba(255,229,102,0.45);
+    }
+    .nav-deposit span { font-size: 10px; color: var(--text-dim); line-height: 1; }
+
+    /* ── DRAWER ── */
+    #drawer-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 49;
+    }
+    #drawer {
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      width: 78%; max-width: 300px;
+      background: var(--bg-dark);
+      border-right: 1px solid var(--border);
+      z-index: 50;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.22s ease;
+    }
+    #drawer.open { transform: translateX(0); }
+    .drawer-head {
+      background: var(--bg-card);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .drawer-user { display: flex; align-items: center; gap: 10px; }
+    .user-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--bg-main);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .drawer-name { font-size: 13px; font-weight: 600; color: #fff; }
+    .drawer-login { font-size: 11px; color: var(--gold); cursor: pointer; }
+    .offer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 10px 12px;
+    }
+    .offer-item {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .offer-icon {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .offer-label { font-size: 11px; color: #fff; line-height: 1.2; }
+    .drawer-section { border-top: 1px solid var(--border); }
+    .drawer-section-title {
+      font-size: 11px;
+      color: rgba(201,168,76,0.6);
+      font-weight: 600;
+      padding: 10px 14px 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .drawer-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .drawer-link:hover { background: rgba(255,255,255,0.03); }
+    .drawer-link-left { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #fff; }
+    .lang-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px;
+      margin: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .lang-left { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+
+    /* Utility */
+    button { font-family: 'Roboto', sans-serif; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <button class="icon-btn" onclick="openDrawer()" aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="brand">HUYNH<br>THUONG</div>
+    </div>
+    <div class="header-right">
+      <button class="btn-outline">Dang nhap</button>
+      <button class="btn-solid">Dang ky</button>
+      <button class="icon-btn" aria-label="Tim kiem">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+      <div style="width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0">
+        <svg viewBox="0 0 30 20" width="22" height="22">
+          <rect width="30" height="20" fill="#DA251D"/>
+          <polygon points="15,4 16.76,9.42 22.36,9.42 17.8,12.58 19.56,18 15,14.84 10.44,18 12.2,12.58 7.64,9.42 13.24,9.42" fill="#FFFF00"/>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- BANNER CAROUSEL -->
+    <div class="carousel" id="carousel">
+      <div class="carousel-track" id="track">
+        <div class="carousel-slide"><img src="https://xgamecdn.com/kp/202604/TENL9HFvJ1JW77vO.png" alt="Banner 1" loading="eager" onerror="this.style.display='none'"/></div>
+        <div class="carousel-slide"><img src="https://xgamecdn.com/kp/202604/vo7Iww95-46d-_XC.png" alt="Banner 2" loading="lazy" onerror="this.style.display='none'"/></div>
+        <div class="carousel-slide"><img src="https://xgamecdn.com/kp/202604/i2tX9HzTKt61pL5h.png" alt="Banner 3" loading="lazy" onerror="this.style.display='none'"/></div>
+        <div class="carousel-slide"><img src="https://xgamecdn.com/kp/202604/2Q0EpeG-e8_uO1mG.png" alt="Banner 4" loading="lazy" onerror="this.style.display='none'"/></div>
+      </div>
+      <div class="dots" id="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <!-- TICKER -->
+    <div class="ticker-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#C9A84C" style="flex-shrink:0"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+      <div class="ticker-wrap">
+        <span class="ticker-text">Chuc mung ban da den voi HUYNH THUONG Casino! Nap lan dau nhan 150% thuong len den 5,000,000 VND. Mung ngay khai truong song bai va nhan ngay uu dai dac biet. Chuc cac ban choi game vui ve va may man! ★★★</span>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#C9A84C" style="flex-shrink:0"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+    </div>
+
+    <!-- JACKPOT -->
+    <div class="jackpot-wrap">
+      <div class="jackpot-box">
+        <div class="jackpot-label">Jackpot Pool</div>
+        <div class="jackpot-num" id="jackpot">621.100.219</div>
+      </div>
+    </div>
+
+    <!-- HALL TABS -->
+    <div class="hall-tabs" id="hallTabs">
+      <button class="hall-tab active" data-hall="jili" onclick="switchHall('jili',this)">
+        <span class="tab-name">JILI</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="pg" onclick="switchHall('pg',this)">
+        <span class="tab-name">PG</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="wg" onclick="switchHall('wg',this)">
+        <span class="tab-name">WG</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="fc" onclick="switchHall('fc',this)">
+        <span class="tab-name">FC</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="jdb" onclick="switchHall('jdb',this)">
+        <span class="tab-name">JDB</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab" data-hall="pp" onclick="switchHall('pp',this)">
+        <span class="tab-name">PP</span><span class="tab-sub">SLOT</span>
+      </button>
+      <button class="hall-tab fav-tab" data-hall="fav" onclick="switchHall('fav',this)" style="min-width:46px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,255,255,0.35)" id="favIcon">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+        <span class="tab-sub">YEU THICH</span>
+      </button>
+    </div>
+
+    <!-- HALL LABEL -->
+    <div class="hall-label">
+      <div class="hall-accent"></div>
+      <span class="hall-title" id="hallTitle">JILI SLOT</span>
+      <span class="hall-count" id="hallCount">15 tro choi</span>
+    </div>
+
+    <!-- GAME GRID -->
+    <div class="game-grid" id="gameGrid"></div>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav>
+    <a class="nav-item active" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#C9A84C"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>Trang chu</span>
+    </a>
+    <a class="nav-item" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)"><path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Khuyen mai</span>
+    </a>
+    <div class="nav-deposit">
+      <div class="deposit-circle">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#0D0D1A"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-4H7l5-5 5 5h-4v4z"/></svg>
+      </div>
+      <span>Nap tien</span>
+    </div>
+    <a class="nav-item" onclick="setNav(this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H
