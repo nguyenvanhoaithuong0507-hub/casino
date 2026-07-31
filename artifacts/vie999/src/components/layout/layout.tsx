@@ -294,17 +294,36 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
                   })}
                 </div>
 
+                {/* Financial Actions */}
+                <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {[
+                      { Icon: IconDeposit, label: "Nạp tiền", href: "/deposit" },
+                      { Icon: IconDeposit, label: "Rút tiền", href: "/withdrawal" },
+                    ].map(({ Icon, label, href }) => (
+                      <Link key={label} href={href} onClick={() => setDrawerOpen(false)}>
+                        <button style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#fff" }}>
+                          <Icon size={20} color="#C9A84C" />
+                          <span style={{ fontSize: 12, color: "#fff" }}>{label}</span>
+                        </button>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Bet Records & Agent */}
                 <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                   <div style={{ display: "flex", gap: 8 }}>
                     {[
-                      { Icon: IconBetRecords, label: "Lịch sử cược" },
-                      { Icon: IconAgent,      label: "Đại lý" },
-                    ].map(({ Icon, label }) => (
-                      <button key={label} style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 8px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, color: "#fff" }}>
-                        <Icon size={22} color="#C9A84C" />
-                        <span style={{ fontSize: 12, color: "#fff" }}>{label}</span>
-                      </button>
+                      { Icon: IconBetRecords, label: "Lịch sử cược", href: "/history" },
+                      { Icon: IconAgent,      label: "Đại lý", href: "#" },
+                    ].map(({ Icon, label, href }) => (
+                      <Link key={label} href={href} onClick={() => setDrawerOpen(false)}>
+                        <button style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 8px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, color: "#fff" }}>
+                          <Icon size={22} color="#C9A84C" />
+                          <span style={{ fontSize: 12, color: "#fff" }}>{label}</span>
+                        </button>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -393,7 +412,7 @@ export function Layout({ children, activeTab, onTabChange }: LayoutProps) {
           </div>
 
           <NavIcon Icon={IconHistory} label="Lịch sử"   href="/history"    active={location === "/history"} />
-          <NavIcon Icon={IconUser}    label="Tôi"        href="/login"       active={location === "/login"} />
+          <NavIcon Icon={IconUser}    label="Tôi"        href="/profile"     active={location === "/profile"} />
         </nav>
       </div>
     </div>
