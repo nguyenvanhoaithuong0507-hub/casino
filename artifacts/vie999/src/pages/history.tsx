@@ -1,261 +1,197 @@
 import React, { useState } from "react";
 import { Layout } from "@/components/layout/layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ArrowUpRight, ArrowDownLeft, ChevronDown } from "lucide-react";
+
+type TxType = "all" | "deposit" | "withdrawal" | "win" | "bet";
 
 interface Transaction {
-  id: string;
-  type: "deposit" | "withdrawal" | "bet" | "win";
+  id: number;
+  type: "deposit" | "withdrawal" | "win" | "bet";
   amount: number;
-  date: string;
-  status: "completed" | "pending" | "failed";
+  game?: string;
   method?: string;
-  description: string;
+  status: "success" | "pending" | "failed";
+  time: string;
+  date: string;
 }
 
-const mockTransactions: Transaction[] = [
-  { id: "1", type: "win", amount: 2500000, date: "2024-12-28 14:30", status: "completed", description: "Thắng game Fortune Gems" },
-  { id: "2", type: "bet", amount: -500000, date: "2024-12-28 14:20", status: "completed", description: "Cược game Super Ace" },
-  { id: "3", type: "deposit", amount: 5000000, date: "2024-12-27 10:15", status: "completed", method: "Chuyển khoản Vietcombank", description: "Nạp tiền" },
-  { id: "4", type: "withdrawal", amount: -3000000, date: "2024-12-26 15:45", status: "completed", method: "ZaloPay", description: "Rút tiền" },
-  { id: "5", type: "bet", amount: -1000000, date: "2024-12-26 09:30", status: "completed", description: "Cược game Mahjong Ways" },
-  { id: "6", type: "deposit", amount: 10000000, date: "2024-12-25 22:00", status: "completed", method: "Momo", description: "Nạp tiền" },
-  { id: "7", type: "withdrawal", amount: -2000000, date: "2024-12-24 18:20", status: "pending", method: "Vietcombank", description: "Rút tiền" },
-  { id: "8", type: "win", amount: 1500000, date: "2024-12-24 12:00", status: "completed", description: "Thắng game Dragon Hatch" },
-  { id: "9", type: "bet", amount: -800000, date: "2024-12-23 20:30", status: "completed", description: "Cược game PG Slots" },
-  { id: "10", type: "deposit", amount: 2000000, date: "2024-12-23 14:00", status: "completed", method: "E-wallet", description: "Nạp tiền" },
+const mockTx: Transaction[] = [
+  { id: 1,  type: "deposit",    amount:  500000,  method: "Vietcombank",     status: "success", time: "14:32", date: "Hôm nay" },
+  { id: 2,  type: "win",        amount:  320000,  game: "Fortune Gems",      status: "success", time: "13:15", date: "Hôm nay" },
+  { id: 3,  type: "bet",        amount: -150000,  game: "Super Ace",         status: "success", time: "13:10", date: "Hôm nay" },
+  { id: 4,  type: "withdrawal", amount: -300000,  method: "MB Bank",         status: "pending", time: "11:47", date: "Hôm nay" },
+  { id: 5,  type: "win",        amount:  875000,  game: "Dragon Treasure",   status: "success", time: "22:05", date: "Hôm qua" },
+  { id: 6,  type: "bet",        amount: -200000,  game: "Lucky Neko",        status: "success", time: "21:58", date: "Hôm qua" },
+  { id: 7,  type: "deposit",    amount: 1000000,  method: "MoMo",            status: "success", time: "20:10", date: "Hôm qua" },
+  { id: 8,  type: "bet",        amount: -500000,  game: "Sweet Bonanza",     status: "success", time: "19:32", date: "Hôm qua" },
+  { id: 9,  type: "win",        amount: 1250000,  game: "Mahjong Ways",      status: "success", time: "18:44", date: "Hôm qua" },
+  { id: 10, type: "withdrawal", amount: -800000,  method: "Techcombank",     status: "success", time: "10:20", date: "02/08" },
+  { id: 11, type: "deposit",    amount: 2000000,  method: "Vietcombank",     status: "success", time: "09:05", date: "02/08" },
+  { id: 12, type: "bet",        amount: -1000000, game: "Big Bass Bonanza",  status: "success", time: "08:30", date: "02/08" },
+  { id: 13, type: "win",        amount: 3500000,  game: "Zeus vs Hades",     status: "success", time: "08:25", date: "02/08" },
+  { id: 14, type: "deposit",    amount:  500000,  method: "ZaloPay",         status: "failed",  time: "16:00", date: "01/08" },
+  { id: 15, type: "bet",        amount: -250000,  game: "Starlight Princess",status: "success", time: "15:42", date: "01/08" },
 ];
 
-const statusColors: Record<string, { bg: string; text: string; label: string }> = {
-  completed: { bg: "bg-green-500/10", text: "text-green-400", label: "Hoàn tất" },
-  pending: { bg: "bg-yellow-500/10", text: "text-yellow-400", label: "Đang xử lý" },
-  failed: { bg: "bg-red-500/10", text: "text-red-400", label: "Thất bại" },
+const TABS: { key: TxType; label: string; emoji: string }[] = [
+  { key: "all",        label: "Tất cả",    emoji: "📋" },
+  { key: "deposit",    label: "Nạp tiền",  emoji: "💰" },
+  { key: "withdrawal", label: "Rút tiền",  emoji: "💸" },
+  { key: "win",        label: "Thắng",     emoji: "🏆" },
+  { key: "bet",        label: "Cược",      emoji: "🎰" },
+];
+
+const TYPE_META: Record<Transaction["type"], { label: string; color: string; bgColor: string; emoji: string }> = {
+  deposit:    { label: "Nạp tiền",  color: "#2EC97C", bgColor: "rgba(46,201,124,0.1)",  emoji: "💰" },
+  withdrawal: { label: "Rút tiền",  color: "#E85D5D", bgColor: "rgba(232,93,93,0.1)",   emoji: "💸" },
+  win:        { label: "Thắng",     color: "#C9A84C", bgColor: "rgba(201,168,76,0.1)",  emoji: "🏆" },
+  bet:        { label: "Cược",      color: "#9ca3af", bgColor: "rgba(156,163,175,0.08)", emoji: "🎰" },
+};
+
+const STATUS_META: Record<Transaction["status"], { label: string; color: string }> = {
+  success: { label: "Thành công", color: "#2EC97C" },
+  pending: { label: "Đang xử lý", color: "#f59e0b" },
+  failed:  { label: "Thất bại",   color: "#E85D5D" },
 };
 
 export default function History() {
-  const [filterType, setFilterType] = useState<"all" | "deposit" | "withdrawal" | "bet" | "win">("all");
-  const [searchText, setSearchText] = useState("");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TxType>("all");
 
-  const filteredTransactions = mockTransactions.filter(tx => {
-    if (filterType !== "all" && tx.type !== filterType) return false;
-    if (searchText && !tx.description.toLowerCase().includes(searchText.toLowerCase())) return false;
-    return true;
-  });
+  const filtered = activeTab === "all" ? mockTx : mockTx.filter(t => t.type === activeTab);
 
-  const getTransactionIcon = (type: Transaction["type"]) => {
-    switch (type) {
-      case "deposit":
-        return <ArrowDownLeft className="w-5 h-5" style={{ color: "#2EC97C" }} />;
-      case "withdrawal":
-        return <ArrowUpRight className="w-5 h-5" style={{ color: "#E85D5D" }} />;
-      case "bet":
-        return <ArrowUpRight className="w-5 h-5" style={{ color: "#F5A623" }} />;
-      case "win":
-        return <ArrowDownLeft className="w-5 h-5" style={{ color: "#C9A84C" }} />;
-    }
+  const stats = {
+    totalDeposit:    mockTx.filter(t => t.type === "deposit"    && t.status === "success").reduce((s, t) => s + t.amount, 0),
+    totalWithdrawal: mockTx.filter(t => t.type === "withdrawal" && t.status === "success").reduce((s, t) => s + Math.abs(t.amount), 0),
+    totalWin:        mockTx.filter(t => t.type === "win").reduce((s, t) => s + t.amount, 0),
+    totalBet:        mockTx.filter(t => t.type === "bet").reduce((s, t) => s + Math.abs(t.amount), 0),
   };
 
-  const getTransactionColor = (type: Transaction["type"]) => {
-    switch (type) {
-      case "deposit":
-      case "win":
-        return "text-green-400";
-      case "withdrawal":
-      case "bet":
-        return "text-red-400";
-      default:
-        return "text-white";
-    }
-  };
-
-  const getTransactionSign = (type: Transaction["type"]) => {
-    switch (type) {
-      case "deposit":
-      case "win":
-        return "+";
-      case "withdrawal":
-      case "bet":
-        return "-";
-      default:
-        return "";
-    }
-  };
+  // Group by date
+  const grouped: Record<string, Transaction[]> = {};
+  for (const tx of filtered) {
+    if (!grouped[tx.date]) grouped[tx.date] = [];
+    grouped[tx.date].push(tx);
+  }
 
   return (
     <Layout>
-      <div className="p-4 pb-24">
-        {/* Header */}
-        <div className="text-center mb-6 mt-4">
-          <h1 className="text-2xl font-black mb-2" style={{ fontFamily: "'Oswald', sans-serif", background: "linear-gradient(135deg, #C9A84C, #F5D787)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-            LỊCH SỬ GIAO DỊCH
+      {/* Page header */}
+      <div style={{ padding: "14px 14px 10px", borderBottom: "1px solid rgba(201,168,76,0.12)", background: "#0D0D1A" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 20, background: "linear-gradient(#C9A84C,#F5D787)", borderRadius: 2 }} />
+          <h1 style={{ fontFamily: "'Oswald',sans-serif", fontSize: 20, fontWeight: 700, color: "#C9A84C", margin: 0, letterSpacing: "0.05em" }}>
+            LỊCH SỬ
           </h1>
-          <p className="text-xs text-white/50">Theo dõi tất cả các giao dịch của bạn</p>
         </div>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", margin: "2px 0 0 11px" }}>Lịch sử giao dịch & cược</p>
+      </div>
 
-        {/* Search Bar */}
-        <div className="mb-4">
-          <Input
-            type="text"
-            placeholder="Tìm kiếm giao dịch..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="h-10 bg-[#1A1A2E] border border-[#C9A84C]/30 text-white placeholder:text-white/30 focus:border-[#C9A84C]"
-          />
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-2">
-          {[
-            { value: "all" as const, label: "Tất cả" },
-            { value: "deposit" as const, label: "Nạp tiền", icon: "📥" },
-            { value: "withdrawal" as const, label: "Rút tiền", icon: "📤" },
-            { value: "bet" as const, label: "Cược", icon: "🎰" },
-            { value: "win" as const, label: "Thắng", icon: "🏆" },
-          ].map(filter => (
-            <button
-              key={filter.value}
-              onClick={() => setFilterType(filter.value)}
-              className={`px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition ${
-                filterType === filter.value
-                  ? "bg-[#C9A84C] text-[#0D0D1A]"
-                  : "bg-[#1A1A2E] border border-[#C9A84C]/20 text-white/60 hover:border-[#C9A84C]/50"
-              }`}
-            >
-              {filter.icon && <span className="mr-1">{filter.icon}</span>}
-              {filter.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Transactions List */}
-        <div className="space-y-2">
-          {filteredTransactions.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-white/50 text-sm">Không có giao dịch nào</p>
-            </div>
-          ) : (
-            filteredTransactions.map(tx => {
-              const isExpanded = expandedId === tx.id;
-              const statusInfo = statusColors[tx.status];
-              
-              return (
-                <div
-                  key={tx.id}
-                  className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-3 cursor-pointer hover:border-[#C9A84C]/50 transition"
-                  onClick={() => setExpandedId(isExpanded ? null : tx.id)}
-                >
-                  {/* Collapsed View */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-10 h-10 rounded-full bg-[#C9A84C]/10 flex items-center justify-center">
-                        {getTransactionIcon(tx.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-white truncate">{tx.description}</p>
-                        <p className="text-xs text-white/50">{tx.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right ml-2">
-                      <p className={`text-sm font-bold ${getTransactionColor(tx.type)}`}>
-                        {getTransactionSign(tx.type)}{Math.abs(tx.amount).toLocaleString("vi-VN")} ₫
-                      </p>
-                      <div className={`inline-block px-2 py-1 rounded text-xs font-bold mt-1 ${statusInfo.bg} ${statusInfo.text}`}>
-                        {statusInfo.label}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Expanded View */}
-                  {isExpanded && (
-                    <div className="mt-3 pt-3 border-t border-[#C9A84C]/10 space-y-2">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <p className="text-white/50">ID giao dịch</p>
-                          <p className="text-white font-mono">{tx.id}</p>
-                        </div>
-                        <div>
-                          <p className="text-white/50">Loại</p>
-                          <p className="text-white capitalize">{
-                            tx.type === "deposit" ? "Nạp tiền" :
-                            tx.type === "withdrawal" ? "Rút tiền" :
-                            tx.type === "bet" ? "Cược" : "Thắng"
-                          }</p>
-                        </div>
-                        <div>
-                          <p className="text-white/50">Số tiền</p>
-                          <p className={`font-bold ${getTransactionColor(tx.type)}`}>
-                            {getTransactionSign(tx.type)}{Math.abs(tx.amount).toLocaleString("vi-VN")} ₫
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-white/50">Trạng thái</p>
-                          <p className={`${statusInfo.text} font-bold`}>{statusInfo.label}</p>
-                        </div>
-                      </div>
-                      {tx.method && (
-                        <div>
-                          <p className="text-xs text-white/50 mb-1">Phương thức</p>
-                          <p className="text-xs text-white bg-[#0D0D1A] rounded p-2">{tx.method}</p>
-                        </div>
-                      )}
-                      <Button
-                        className="w-full h-8 text-xs font-bold bg-[#0D0D1A] border border-[#C9A84C]/30 text-[#C9A84C] hover:border-[#C9A84C] mt-2"
-                        onClick={() => setExpandedId(null)}
-                      >
-                        ĐÓNG
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Statistics Summary */}
-        <div className="mt-8 pt-4 border-t border-[#C9A84C]/10">
-          <p className="text-sm font-bold text-white mb-3">Thống kê</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#1A1A2E] border border-[#2EC97C]/30 rounded-lg p-3">
-              <p className="text-xs text-[#2EC97C] mb-1">Tổng nạp tiền</p>
-              <p className="text-lg font-bold text-[#2EC97C]">
-                {mockTransactions
-                  .filter(tx => tx.type === "deposit")
-                  .reduce((sum, tx) => sum + tx.amount, 0)
-                  .toLocaleString("vi-VN")} ₫
-              </p>
-            </div>
-            <div className="bg-[#1A1A2E] border border-[#E85D5D]/30 rounded-lg p-3">
-              <p className="text-xs text-[#E85D5D] mb-1">Tổng rút tiền</p>
-              <p className="text-lg font-bold text-[#E85D5D]">
-                {Math.abs(mockTransactions
-                  .filter(tx => tx.type === "withdrawal")
-                  .reduce((sum, tx) => sum + tx.amount, 0))
-                  .toLocaleString("vi-VN")} ₫
-              </p>
-            </div>
-            <div className="bg-[#1A1A2E] border border-[#C9A84C]/30 rounded-lg p-3">
-              <p className="text-xs text-[#C9A84C] mb-1">Tổng thắng</p>
-              <p className="text-lg font-bold text-[#C9A84C]">
-                {mockTransactions
-                  .filter(tx => tx.type === "win")
-                  .reduce((sum, tx) => sum + tx.amount, 0)
-                  .toLocaleString("vi-VN")} ₫
-              </p>
-            </div>
-            <div className="bg-[#1A1A2E] border border-[#F5A623]/30 rounded-lg p-3">
-              <p className="text-xs text-[#F5A623] mb-1">Tổng cược</p>
-              <p className="text-lg font-bold text-[#F5A623]">
-                {Math.abs(mockTransactions
-                  .filter(tx => tx.type === "bet")
-                  .reduce((sum, tx) => sum + tx.amount, 0))
-                  .toLocaleString("vi-VN")} ₫
-              </p>
+      {/* Stats summary */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, padding: "10px 10px 0" }}>
+        {[
+          { label: "Tổng nạp",  value: stats.totalDeposit,    color: "#2EC97C" },
+          { label: "Tổng rút",  value: stats.totalWithdrawal, color: "#E85D5D" },
+          { label: "Tổng thắng",value: stats.totalWin,        color: "#C9A84C" },
+          { label: "Tổng cược", value: stats.totalBet,        color: "#9ca3af" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#13131F", border: `1px solid ${s.color}22`, borderRadius: 10, padding: "10px 12px" }}>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 2 }}>{s.label}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: s.color, fontFamily: "'Oswald',sans-serif" }}>
+              {s.value.toLocaleString("vi-VN")} ₫
             </div>
           </div>
-        </div>
+        ))}
+      </div>
+
+      {/* Filter tabs */}
+      <div style={{
+        display: "flex", overflowX: "auto", scrollbarWidth: "none",
+        padding: "10px 10px 0", gap: 6,
+      }} className="no-scrollbar">
+        {TABS.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              flex: "0 0 auto", height: 34, padding: "0 12px",
+              borderRadius: 20, cursor: "pointer",
+              background: activeTab === tab.key ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.05)",
+              border: `1px solid ${activeTab === tab.key ? "#C9A84C" : "rgba(255,255,255,0.08)"}`,
+              fontSize: 12, fontWeight: 600,
+              color: activeTab === tab.key ? "#C9A84C" : "rgba(255,255,255,0.5)",
+              display: "flex", alignItems: "center", gap: 5,
+              transition: "all 0.15s",
+            }}
+          >
+            <span style={{ fontSize: 14 }}>{tab.emoji}</span>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Transaction list grouped by date */}
+      <div style={{ padding: "10px 10px 24px" }}>
+        {Object.entries(grouped).length === 0 ? (
+          <div style={{ textAlign: "center", padding: "48px 0", color: "rgba(201,168,76,0.3)", fontSize: 13 }}>
+            Không có giao dịch nào
+          </div>
+        ) : (
+          Object.entries(grouped).map(([date, txs]) => (
+            <div key={date} style={{ marginBottom: 14 }}>
+              {/* Date label */}
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontWeight: 700, letterSpacing: "0.06em", marginBottom: 6, paddingLeft: 2, textTransform: "uppercase" }}>
+                {date}
+              </div>
+              {/* Transactions */}
+              <div style={{ background: "#13131F", border: "1px solid rgba(201,168,76,0.1)", borderRadius: 12, overflow: "hidden" }}>
+                {txs.map((tx, i) => {
+                  const meta   = TYPE_META[tx.type];
+                  const status = STATUS_META[tx.status];
+                  const isPositive = tx.amount > 0;
+                  return (
+                    <div
+                      key={tx.id}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 10, padding: "11px 12px",
+                        borderBottom: i < txs.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                      }}
+                    >
+                      {/* Icon */}
+                      <div style={{
+                        width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                        background: meta.bgColor,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 18,
+                      }}>
+                        {meta.emoji}
+                      </div>
+                      {/* Details */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>
+                            {meta.label}
+                          </span>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: status.color, background: `${status.color}18`, borderRadius: 4, padding: "1px 5px" }}>
+                            {status.label}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {tx.game || tx.method || ""} · {tx.time}
+                        </div>
+                      </div>
+                      {/* Amount */}
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: isPositive ? "#2EC97C" : "rgba(255,255,255,0.7)", fontFamily: "'Oswald',sans-serif" }}>
+                          {isPositive ? "+" : ""}{tx.amount.toLocaleString("vi-VN")}
+                        </div>
+                        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>VND</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </Layout>
   );

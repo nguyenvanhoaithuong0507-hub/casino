@@ -1,278 +1,237 @@
 import React, { useState } from "react";
 import { Layout } from "@/components/layout/layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Link } from "wouter";
 import { toast } from "sonner";
-import { Copy, Edit2, LogOut, ChevronRight } from "lucide-react";
 
-interface UserProfile {
-  username: string;
-  email: string;
-  phone: string;
-  balance: number;
-  totalDeposited: number;
-  totalWithdrawn: number;
-  joinedDate: string;
-  vipLevel: number;
-}
+const VIP_LEVELS = [
+  { level: 0, name: "Thành viên",   emoji: "⚪", color: "#9ca3af", min: 0 },
+  { level: 1, name: "Bạc",          emoji: "🥈", color: "#94a3b8", min: 5_000_000 },
+  { level: 2, name: "Vàng",         emoji: "🥇", color: "#C9A84C", min: 10_000_000 },
+  { level: 3, name: "Bạch Kim",     emoji: "💠", color: "#7dd3fc", min: 50_000_000 },
+  { level: 4, name: "Kim Cương",    emoji: "💎", color: "#a78bfa", min: 100_000_000 },
+];
 
-const mockUser: UserProfile = {
+const menuItems = [
+  { emoji: "🔐", label: "Đổi mật khẩu",    href: "#" },
+  { emoji: "🏦", label: "Tài khoản ngân hàng", href: "#" },
+  { emoji: "📋", label: "Lịch sử giao dịch",  href: "/history" },
+  { emoji: "💬", label: "Hỗ trợ khách hàng",  href: "#" },
+  { emoji: "❓", label: "Câu hỏi thường gặp",  href: "#" },
+  { emoji: "ℹ️",  label: "Giới thiệu",          href: "#" },
+];
+
+const mockUser = {
   username: "user123456",
   email: "user@example.com",
   phone: "0988888888",
-  balance: 5234550,
-  totalDeposited: 15000000,
-  totalWithdrawn: 9765450,
-  joinedDate: "2024-01-15",
+  balance: 5_234_550,
+  totalDeposited: 15_000_000,
+  joinedDate: "15/01/2024",
   vipLevel: 2,
 };
 
 export default function Profile() {
+  const [user, setUser]       = useState(mockUser);
   const [editMode, setEditMode] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [user, setUser] = useState<UserProfile>(mockUser);
-  const [editForm, setEditForm] = useState({
-    email: user.email,
-    phone: user.phone,
-  });
+  const [editForm, setEditForm] = useState({ email: user.email, phone: user.phone });
+  const [copied, setCopied]   = useState(false);
+
+  const currentVip  = VIP_LEVELS[user.vipLevel];
+  const nextVip     = VIP_LEVELS[Math.min(user.vipLevel + 1, VIP_LEVELS.length - 1)];
+  const progress    = user.vipLevel >= VIP_LEVELS.length - 1
+    ? 100
+    : Math.min(100, (user.totalDeposited / nextVip.min) * 100);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
     toast.success("Đã sao chép!");
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSaveEdit = () => {
-    if (!editForm.email || !editForm.phone) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
-      return;
-    }
+  const handleSave = () => {
+    if (!editForm.email || !editForm.phone) { toast.error("Vui lòng điền đầy đủ thông tin"); return; }
     setUser({ ...user, ...editForm });
     setEditMode(false);
-    toast.success("Cập nhật thông tin thành công!");
+    toast.success("Cập nhật thành công!");
   };
-
-  const vipLevels = [
-    { level: 0, name: "Thành viên", minDeposit: 0, bonus: "0%" },
-    { level: 1, name: "Bạc", minDeposit: 5000000, bonus: "0.5%" },
-    { level: 2, name: "Vàng", minDeposit: 10000000, bonus: "1%" },
-    { level: 3, name: "Bạch Kim", minDeposit: 50000000, bonus: "2%" },
-    { level: 4, name: "Kim Cương", minDeposit: 100000000, bonus: "5%" },
-  ];
-
-  const currentVipInfo = vipLevels[user.vipLevel];
-  const nextVipLevel = vipLevels[Math.min(user.vipLevel + 1, vipLevels.length - 1)];
-  const progressToNextLevel = user.vipLevel < vipLevels.length - 1
-    ? Math.min(100, (user.totalDeposited / nextVipLevel.minDeposit) * 100)
-    : 100;
 
   return (
     <Layout>
-      <div className="p-4 pb-24">
-        {/* Header */}
-        <div className="text-center mb-6 mt-4">
-          <h1 className="text-2xl font-black mb-2" style={{ fontFamily: "'Oswald', sans-serif", background: "linear-gradient(135deg, #C9A84C, #F5D787)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-            TÀI KHOẢN CỦA TÔI
+      {/* Page header */}
+      <div style={{ padding: "14px 14px 10px", borderBottom: "1px solid rgba(201,168,76,0.12)", background: "#0D0D1A" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 20, background: "linear-gradient(#C9A84C,#F5D787)", borderRadius: 2 }} />
+          <h1 style={{ fontFamily: "'Oswald',sans-serif", fontSize: 20, fontWeight: 700, color: "#C9A84C", margin: 0, letterSpacing: "0.05em" }}>
+            TÀI KHOẢN
           </h1>
         </div>
+      </div>
 
-        {/* User Avatar & Name */}
-        <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-4 mb-4 text-center">
-          <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#F5D787] flex items-center justify-center">
-            <span className="text-4xl font-bold text-[#0D0D1A]">{user.username.charAt(0).toUpperCase()}</span>
-          </div>
-          <p className="font-bold text-white text-lg mb-1">{user.username}</p>
-          <p className="text-xs text-white/50 mb-3">Tham gia từ {new Date(user.joinedDate).toLocaleDateString("vi-VN")}</p>
-          
-          {/* VIP Badge */}
-          <div className="inline-block px-3 py-1 rounded-full bg-[#C9A84C]/20 border border-[#C9A84C]">
-            <span className="text-xs font-bold text-[#C9A84C]">⭐ {currentVipInfo.name}</span>
-          </div>
-        </div>
+      <div style={{ padding: "14px 12px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
 
-        {/* Balance Card */}
-        <div className="bg-gradient-to-br from-[#C9A84C]/20 to-[#C9A84C]/5 border border-[#C9A84C]/30 rounded-lg p-4 mb-4">
-          <p className="text-xs text-white/60 mb-1">SỐ DƯ HIỆN TẠI</p>
-          <p className="text-3xl font-black text-[#C9A84C] mb-3">{user.balance.toLocaleString("vi-VN")} ₫</p>
-          <div className="flex gap-2">
-            <Link href="/deposit" className="flex-1">
-              <Button className="w-full h-10 text-sm font-bold bg-[#1A1A2E] border border-[#C9A84C]/30 text-[#C9A84C] hover:border-[#C9A84C] transition">
-                NẠPTIỀN
-              </Button>
-            </Link>
-            <Link href="/withdrawal" className="flex-1">
-              <Button className="w-full h-10 text-sm font-bold bg-gradient-to-br from-[#C9A84C] to-[#E8C96A] text-[#0D0D1A] hover:opacity-90">
-                RÚT TIỀN
-              </Button>
-            </Link>
+        {/* Avatar + balance card */}
+        <div style={{
+          background: "linear-gradient(135deg,#1A1A2E 0%,#0D0D1A 100%)",
+          border: "1px solid rgba(201,168,76,0.2)", borderRadius: 14, padding: "16px 14px",
+          position: "relative", overflow: "hidden",
+        }}>
+          <div style={{ position: "absolute", right: -20, top: -20, width: 120, height: 120, borderRadius: "50%", background: "rgba(201,168,76,0.05)", filter: "blur(20px)" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+            <div style={{
+              width: 54, height: 54, borderRadius: "50%",
+              background: "linear-gradient(135deg,#1A1A2E,#0D0D1A)",
+              border: "2px solid rgba(201,168,76,0.4)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 24, flexShrink: 0,
+            }}>
+              {currentVip.emoji}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontFamily: "'Oswald',sans-serif", fontSize: 16, fontWeight: 700, color: "#fff" }}>
+                  {user.username}
+                </span>
+                <button onClick={() => handleCopy(user.username)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: copied ? "#2EC97C" : "rgba(255,255,255,0.3)" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 3, background: `${currentVip.color}22`, border: `1px solid ${currentVip.color}55`, borderRadius: 20, padding: "2px 8px" }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: currentVip.color }}>{currentVip.name}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Balance row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 12px" }}>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 2 }}>Số dư</div>
+              <div style={{ fontFamily: "'Oswald',sans-serif", fontSize: 16, fontWeight: 700, color: "#C9A84C" }}>
+                {user.balance.toLocaleString("vi-VN")} ₫
+              </div>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 12px" }}>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginBottom: 2 }}>Ngày tham gia</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{user.joinedDate}</div>
+            </div>
           </div>
         </div>
 
         {/* VIP Progress */}
-        <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-4 mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-bold text-white">Tiến độ VIP</p>
-            <p className="text-xs text-white/50">{Math.floor(progressToNextLevel)}%</p>
+        <div style={{ background: "#13131F", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 12, padding: "12px 14px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>Tiến độ VIP</span>
+            {user.vipLevel < VIP_LEVELS.length - 1 && (
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+                Cần {(nextVip.min - user.totalDeposited).toLocaleString("vi-VN")} ₫ để lên {nextVip.name}
+              </span>
+            )}
           </div>
-          <div className="w-full h-2 bg-[#0D0D1A] rounded-full overflow-hidden mb-3">
-            <div 
-              className="h-full bg-gradient-to-r from-[#C9A84C] to-[#F5D787] transition-all"
-              style={{ width: `${progressToNextLevel}%` }}
-            />
-          </div>
-          {user.vipLevel < vipLevels.length - 1 && (
-            <p className="text-xs text-white/60">
-              Cần <span className="text-[#C9A84C]">{(nextVipLevel.minDeposit - user.totalDeposited).toLocaleString("vi-VN")} ₫</span> nữa để lên <span className="text-[#C9A84C]">{nextVipLevel.name}</span>
-            </p>
-          )}
-          {user.vipLevel === vipLevels.length - 1 && (
-            <p className="text-xs text-[#C9A84C]">Bạn đã đạt cấp VIP cao nhất! 🎉</p>
-          )}
-        </div>
-
-        {/* Statistics */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-3">
-            <p className="text-xs text-white/50 mb-1">Tổng nạp</p>
-            <p className="font-bold text-[#C9A84C]">{user.totalDeposited.toLocaleString("vi-VN")} ₫</p>
-          </div>
-          <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-3">
-            <p className="text-xs text-white/50 mb-1">Tổng rút</p>
-            <p className="font-bold text-[#C9A84C]">{user.totalWithdrawn.toLocaleString("vi-VN")} ₫</p>
-          </div>
-        </div>
-
-        {/* Account Information */}
-        <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-4 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-bold text-white">Thông tin tài khoản</p>
-            <button
-              onClick={() => {
-                if (editMode) {
-                  handleSaveEdit();
-                } else {
-                  setEditMode(true);
-                }
-              }}
-              className="text-[#C9A84C] hover:text-[#F5D787] flex items-center gap-1"
-            >
-              <Edit2 size={16} />
-              <span className="text-xs font-bold">{editMode ? "LƯU" : "CHỈNH SỬA"}</span>
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {/* Username (Read-only) */}
-            <div>
-              <p className="text-xs text-white/50 mb-1">Tên đăng nhập</p>
-              <div className="flex items-center justify-between">
-                <p className="font-bold text-white">{user.username}</p>
-                <button onClick={() => handleCopy(user.username)} className="text-white/50 hover:text-[#C9A84C]">
-                  {copied ? <span className="text-xs">✓</span> : <Copy size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <p className="text-xs text-white/50 mb-1">Email</p>
-              {editMode ? (
-                <Input
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  className="h-9 bg-[#0D0D1A] border border-[#C9A84C]/30 text-white"
-                />
-              ) : (
-                <div className="flex items-center justify-between">
-                  <p className="font-bold text-white">{user.email}</p>
-                  <button onClick={() => handleCopy(user.email)} className="text-white/50 hover:text-[#C9A84C]">
-                    {copied ? <span className="text-xs">✓</span> : <Copy size={16} />}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Phone */}
-            <div>
-              <p className="text-xs text-white/50 mb-1">Số điện thoại</p>
-              {editMode ? (
-                <Input
-                  type="tel"
-                  value={editForm.phone}
-                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                  className="h-9 bg-[#0D0D1A] border border-[#C9A84C]/30 text-white"
-                />
-              ) : (
-                <div className="flex items-center justify-between">
-                  <p className="font-bold text-white">{user.phone}</p>
-                  <button onClick={() => handleCopy(user.phone)} className="text-white/50 hover:text-[#C9A84C]">
-                    {copied ? <span className="text-xs">✓</span> : <Copy size={16} />}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {editMode && (
-            <Button
-              onClick={() => setEditMode(false)}
-              className="w-full h-9 text-sm font-bold bg-[#0D0D1A] border border-[#C9A84C]/30 text-[#C9A84C] hover:border-[#C9A84C] mt-3"
-            >
-              HỦY
-            </Button>
-          )}
-        </div>
-
-        {/* VIP Benefits */}
-        <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-4 mb-4">
-          <p className="text-sm font-bold text-white mb-3">Quyền lợi VIP</p>
-          <div className="space-y-2">
-            {vipLevels.map((level) => (
-              <div
-                key={level.level}
-                className={`p-2 rounded border ${
-                  user.vipLevel >= level.level
-                    ? "bg-[#C9A84C]/10 border-[#C9A84C]"
-                    : "bg-[#0D0D1A]/50 border-white/10"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`text-xs font-bold ${user.vipLevel >= level.level ? "text-[#C9A84C]" : "text-white/50"}`}>
-                    {level.name}
-                  </span>
-                  <span className={`text-xs ${user.vipLevel >= level.level ? "text-[#C9A84C]" : "text-white/50"}`}>
-                    Hoàn trả {level.bonus}
-                  </span>
-                </div>
+          <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+            {VIP_LEVELS.map(v => (
+              <div key={v.level} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                <div style={{
+                  width: "100%", height: 4, borderRadius: 2,
+                  background: user.vipLevel >= v.level ? v.color : "rgba(255,255,255,0.1)",
+                  transition: "background 0.3s",
+                }} />
+                <span style={{ fontSize: 8, color: user.vipLevel === v.level ? v.color : "rgba(255,255,255,0.3)", fontWeight: 700 }}>
+                  {v.emoji}
+                </span>
               </div>
             ))}
           </div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+            Tổng nạp: <span style={{ color: "#C9A84C", fontWeight: 700 }}>{user.totalDeposited.toLocaleString("vi-VN")} ₫</span>
+          </div>
         </div>
 
-        {/* Menu Items */}
-        <div className="space-y-2 mb-4">
-          <button className="w-full flex items-center justify-between p-4 bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg hover:border-[#C9A84C]/50 transition">
-            <span className="text-sm font-bold text-white">Hỗ trợ khách hàng</span>
-            <ChevronRight size={16} className="text-white/50" />
-          </button>
-          <button className="w-full flex items-center justify-between p-4 bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg hover:border-[#C9A84C]/50 transition">
-            <span className="text-sm font-bold text-white">Câu hỏi thường gặp</span>
-            <ChevronRight size={16} className="text-white/50" />
-          </button>
-          <button className="w-full flex items-center justify-between p-4 bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg hover:border-[#C9A84C]/50 transition">
-            <span className="text-sm font-bold text-white">Điều khoản & Điều kiện</span>
-            <ChevronRight size={16} className="text-white/50" />
-          </button>
+        {/* Account info */}
+        <div style={{ background: "#13131F", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Thông tin tài khoản</span>
+            <button
+              onClick={() => editMode ? handleSave() : setEditMode(true)}
+              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: "#C9A84C", fontSize: 12, fontWeight: 700 }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              {editMode ? "LƯU" : "SỬA"}
+            </button>
+          </div>
+          {[
+            { label: "Email", value: user.email, editKey: "email" as const, type: "email" },
+            { label: "Điện thoại", value: user.phone, editKey: "phone" as const, type: "tel" },
+          ].map(row => (
+            <div key={row.label} style={{ padding: "10px 14px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 3 }}>{row.label}</div>
+              {editMode ? (
+                <input
+                  type={row.type}
+                  value={editForm[row.editKey]}
+                  onChange={e => setEditForm({ ...editForm, [row.editKey]: e.target.value })}
+                  style={{ width: "100%", height: 36, borderRadius: 8, background: "#0D0D1A", border: "1px solid rgba(201,168,76,0.3)", color: "#fff", padding: "0 10px", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                />
+              ) : (
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{row.value}</span>
+              )}
+            </div>
+          ))}
+          {editMode && (
+            <div style={{ padding: "8px 14px" }}>
+              <button onClick={() => setEditMode(false)}
+                style={{ width: "100%", height: 38, borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>
+                HỦY
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Quick action buttons */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <Link href="/deposit">
+            <button style={{ width: "100%", height: 46, borderRadius: 10, background: "linear-gradient(135deg,#C9A84C,#F5D787)", border: "none", cursor: "pointer", fontFamily: "'Oswald',sans-serif", fontSize: 14, fontWeight: 700, color: "#0D0D1A" }}>
+              NẠP TIỀN
+            </button>
+          </Link>
+          <Link href="/withdrawal">
+            <button style={{ width: "100%", height: 46, borderRadius: 10, background: "rgba(46,201,124,0.1)", border: "1px solid rgba(46,201,124,0.3)", cursor: "pointer", fontFamily: "'Oswald',sans-serif", fontSize: 14, fontWeight: 700, color: "#2EC97C" }}>
+              RÚT TIỀN
+            </button>
+          </Link>
+        </div>
+
+        {/* Menu items */}
+        <div style={{ background: "#13131F", border: "1px solid rgba(201,168,76,0.12)", borderRadius: 12, overflow: "hidden" }}>
+          {menuItems.map((item, i) => (
+            <Link key={i} href={item.href}>
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "13px 14px",
+                borderBottom: i < menuItems.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                cursor: "pointer",
+              }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 18 }}>{item.emoji}</span>
+                  <span style={{ fontSize: 13, color: "#fff" }}>{item.label}</span>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </Link>
+          ))}
         </div>
 
         {/* Logout */}
-        <Button className="w-full h-12 text-md font-bold bg-[#C0272D]/20 border border-[#C0272D]/50 text-[#C0272D] hover:bg-[#C0272D]/30 flex items-center justify-center gap-2">
-          <LogOut size={18} />
+        <button
+          onClick={() => toast.info("Đã đăng xuất")}
+          style={{ width: "100%", height: 46, borderRadius: 10, background: "rgba(192,39,45,0.08)", border: "1px solid rgba(192,39,45,0.25)", cursor: "pointer", fontSize: 14, fontWeight: 700, color: "#E85D5D" }}
+        >
           ĐĂNG XUẤT
-        </Button>
+        </button>
       </div>
     </Layout>
   );

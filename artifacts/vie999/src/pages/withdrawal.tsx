@@ -1,398 +1,234 @@
 import React, { useState } from "react";
 import { Layout } from "@/components/layout/layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Copy, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const withdrawalSchema = z.object({
-  amount: z.string()
-    .refine(val => !isNaN(Number(val)) && Number(val) > 0, "Số tiền phải lớn hơn 0")
-    .refine(val => Number(val) >= 50000, "Số tiền tối thiểu 50,000 VND"),
-  withdrawalMethod: z.enum(["bank", "ewallet"], { errorMap: () => ({ message: "Vui lòng chọn phương thức rút tiền" }) }),
-  bankName: z.string().optional(),
-  accountNumber: z.string().optional(),
-  accountHolder: z.string().optional(),
-  ewalletType: z.string().optional(),
-  ewalletPhone: z.string().optional(),
-});
+const AMOUNTS = [50000, 100000, 200000, 500000, 1000000, 2000000];
 
-const bankOptions = [
-  { id: "vcb", name: "Vietcombank", shortName: "VCB" },
-  { id: "acb", name: "ACB", shortName: "ACB" },
-  { id: "vpb", name: "VPBank", shortName: "VPB" },
-  { id: "mb", name: "MB Bank", shortName: "MB" },
-  { id: "tpb", name: "TPB", shortName: "TPB" },
-  { id: "tech", name: "Techcombank", shortName: "TCB" },
+const banks = [
+  { id: "vcb",  name: "Vietcombank", short: "VCB", color: "#006633" },
+  { id: "acb",  name: "ACB",         short: "ACB", color: "#003087" },
+  { id: "mb",   name: "MB Bank",     short: "MB",  color: "#004B87" },
+  { id: "tech", name: "Techcombank", short: "TCB", color: "#CC0001" },
+  { id: "vpb",  name: "VPBank",      short: "VPB", color: "#006940" },
+  { id: "tpb",  name: "TPBank",      short: "TPB", color: "#9B1F5E" },
 ];
 
-const ewalletMethods = [
-  { id: "momo", name: "Momo", icon: "🟠", color: "#FF6B35" },
-  { id: "zalopay", name: "ZaloPay", icon: "💚", color: "#009FFF" },
+const ewallets = [
+  { id: "momo",    name: "MoMo",    emoji: "🟣", color: "#A50064" },
+  { id: "zalopay", name: "ZaloPay", emoji: "💙", color: "#0068FF" },
 ];
 
 export default function Withdrawal() {
-  const [step, setStep] = useState<"select" | "confirm">("select");
-  const [selectedMethod, setSelectedMethod] = useState<"bank" | "ewallet" | null>(null);
-  const [selectedBank, setSelectedBank] = useState<string | null>(null);
-  const [selectedEwallet, setSelectedEwallet] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [amount, setAmount]     = useState("");
+  const [method, setMethod]     = useState<"bank" | "ewallet" | null>(null);
+  const [selectedBank, setSelectedBank]       = useState("vcb");
+  const [selectedEwallet, setSelectedEwallet] = useState("momo");
+  const [accountNumber, setAccountNumber]     = useState("");
+  const [accountHolder, setAccountHolder]     = useState("");
+  const [ewalletPhone, setEwalletPhone]       = useState("");
+  const [step, setStep]         = useState<"form" | "confirm">("form");
 
-  const form = useForm<z.infer<typeof withdrawalSchema>>({
-    resolver: zodResolver(withdrawalSchema),
-    defaultValues: {
-      amount: "",
-      withdrawalMethod: undefined,
-      bankName: undefined,
-      accountNumber: "",
-      accountHolder: "",
-      ewalletType: undefined,
-      ewalletPhone: "",
-    },
-  });
+  const numAmount = Number(amount.replace(/\D/g, ""));
+  const bankValid = method === "bank" && accountNumber && accountHolder;
+  const ewalletValid = method === "ewallet" && ewalletPhone;
+  const valid = numAmount >= 50000 && (bankValid || ewalletValid);
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success("Đã sao chép!");
+  const handleAmountInput = (v: string) => {
+    const num = v.replace(/\D/g, "");
+    setAmount(num ? Number(num).toLocaleString("vi-VN") : "");
   };
 
-  function onSubmit(values: z.infer<typeof withdrawalSchema>) {
-    if (values.withdrawalMethod === "bank" && (!values.accountNumber || !values.accountHolder)) {
-      toast.error("Vui lòng điền đầy đủ thông tin tài khoản ngân hàng");
-      return;
-    }
-    if (values.withdrawalMethod === "ewallet" && !values.ewalletPhone) {
-      toast.error("Vui lòng nhập số điện thoại");
-      return;
-    }
-    
-    toast.success(`Yêu cầu rút ${Number(values.amount).toLocaleString("vi-VN")} VND thành công!`);
-    form.reset();
-    setStep("select");
-    setSelectedMethod(null);
-    setSelectedBank(null);
-    setSelectedEwallet(null);
-  }
+  const handleSubmit = () => {
+    if (!valid) { toast.error("Vui lòng điền đầy đủ thông tin"); return; }
+    setStep("confirm");
+  };
+
+  const handleConfirm = () => {
+    toast.success(`Yêu cầu rút ${numAmount.toLocaleString("vi-VN")} VND đã được gửi! Xử lý trong 5–15 phút.`);
+    setAmount(""); setMethod(null); setAccountNumber(""); setAccountHolder(""); setEwalletPhone(""); setStep("form");
+  };
 
   return (
     <Layout>
-      <div className="p-4 pb-24">
-        {/* Header */}
-        <div className="text-center mb-6 mt-4">
-          <h1 className="text-2xl font-black mb-2" style={{ fontFamily: "'Oswald', sans-serif", background: "linear-gradient(135deg, #C9A84C, #F5D787)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+      {/* Page header */}
+      <div style={{ padding: "14px 14px 10px", borderBottom: "1px solid rgba(201,168,76,0.12)", background: "#0D0D1A" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 20, background: "linear-gradient(#C9A84C,#F5D787)", borderRadius: 2 }} />
+          <h1 style={{ fontFamily: "'Oswald',sans-serif", fontSize: 20, fontWeight: 700, color: "#C9A84C", margin: 0, letterSpacing: "0.05em" }}>
             RÚT TIỀN
           </h1>
-          <p className="text-xs text-white/50">Tối thiểu 50,000 VND</p>
         </div>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", margin: "2px 0 0 11px" }}>Tối thiểu 50,000 VND · Xử lý 5–15 phút</p>
+      </div>
 
-        {/* Current Balance */}
-        <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-4 mb-4 text-center">
-          <p className="text-xs text-white/50 mb-1">Số dư hiện tại</p>
-          <p className="text-2xl font-black text-[#C9A84C]">5,234,550 ₫</p>
-        </div>
+      <div style={{ padding: "14px 12px 24px" }}>
+        <AnimatePresence mode="wait">
+          {step === "form" ? (
+            <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
-        {step === "select" ? (
-          <>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                {/* Amount Input */}
-                <FormField
-                  control={form.control}
-                  name="amount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-4 top-3.5 text-white/50 text-sm">₫</span>
-                          <Input
-                            type="number"
-                            placeholder="Nhập số tiền"
-                            className="pl-7 h-12 bg-[#1A1A2E] border border-[#C9A84C]/30 text-white placeholder:text-white/30 focus:border-[#C9A84C] focus:ring-[#C9A84C]/20"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-xs text-[#C0272D]" />
-                    </FormItem>
-                  )}
-                />
+              {/* Balance */}
+              <div style={{
+                background: "linear-gradient(135deg,#1A1A2E,#0D0D1A)",
+                border: "1px solid rgba(201,168,76,0.2)", borderRadius: 12,
+                padding: 14, marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}>
+                <div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 2 }}>Số dư khả dụng</div>
+                  <div style={{ fontFamily: "'Oswald',sans-serif", fontSize: 22, fontWeight: 700, color: "#2EC97C" }}>
+                    5,234,550 ₫
+                  </div>
+                </div>
+                <div style={{ fontSize: 28 }}>💸</div>
+              </div>
 
-                {/* Quick Amount Buttons */}
-                <div className="grid grid-cols-4 gap-2">
-                  {["500000", "1000000", "2000000", "3000000"].map(amount => (
-                    <button
-                      key={amount}
-                      type="button"
-                      onClick={() => form.setValue("amount", amount)}
-                      className="py-2 px-2 text-xs font-bold bg-[#1A1A2E] border border-[#C9A84C]/20 text-[#C9A84C] rounded hover:border-[#C9A84C]/50 transition"
-                    >
-                      {(Number(amount) / 1000).toFixed(0)}K
+              {/* Amount */}
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6, fontWeight: 600 }}>SỐ TIỀN RÚT</label>
+                <div style={{ position: "relative" }}>
+                  <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "rgba(255,255,255,0.4)", fontWeight: 700 }}>₫</span>
+                  <input
+                    type="text" inputMode="numeric" placeholder="Nhập số tiền" value={amount}
+                    onChange={e => handleAmountInput(e.target.value)}
+                    style={{
+                      width: "100%", height: 48, paddingLeft: 30, paddingRight: 12, boxSizing: "border-box",
+                      background: "#1A1A2E", border: `1px solid ${numAmount > 0 && numAmount < 50000 ? "#C0272D" : "rgba(201,168,76,0.25)"}`,
+                      borderRadius: 10, color: "#fff", fontSize: 15, fontWeight: 600, outline: "none",
+                    }}
+                  />
+                </div>
+                {numAmount > 0 && numAmount < 50000 && (
+                  <div style={{ fontSize: 11, color: "#E85D5D", marginTop: 4 }}>Số tiền tối thiểu là 50,000 VND</div>
+                )}
+              </div>
+
+              {/* Quick */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 7, marginBottom: 16 }}>
+                {AMOUNTS.map(a => (
+                  <button key={a} onClick={() => setAmount(a.toLocaleString("vi-VN"))}
+                    style={{
+                      height: 36, borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 600,
+                      background: numAmount === a ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${numAmount === a ? "#C9A84C" : "rgba(255,255,255,0.1)"}`,
+                      color: numAmount === a ? "#C9A84C" : "rgba(255,255,255,0.6)", transition: "all 0.15s",
+                    }}>
+                    {a >= 1000000 ? `${a / 1000000}M` : `${a / 1000}K`}
+                  </button>
+                ))}
+              </div>
+
+              {/* Method */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 8, fontWeight: 600 }}>PHƯƠNG THỨC RÚT</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+                  {(["bank", "ewallet"] as const).map(m => (
+                    <button key={m} onClick={() => setMethod(m)}
+                      style={{
+                        height: 50, borderRadius: 10, cursor: "pointer",
+                        background: method === m ? "rgba(201,168,76,0.12)" : "rgba(255,255,255,0.04)",
+                        border: `1.5px solid ${method === m ? "#C9A84C" : "rgba(255,255,255,0.1)"}`,
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.15s",
+                      }}>
+                      <span style={{ fontSize: 20 }}>{m === "bank" ? "🏦" : "📱"}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: method === m ? "#C9A84C" : "rgba(255,255,255,0.6)" }}>
+                        {m === "bank" ? "Ngân hàng" : "Ví điện tử"}
+                      </span>
                     </button>
                   ))}
                 </div>
 
-                {/* Withdrawal Method Selection */}
-                <div className="mt-6">
-                  <p className="text-sm font-bold text-white mb-3">Phương thức rút tiền</p>
-
-                  {/* Bank Withdrawal */}
-                  <div
-                    onClick={() => {
-                      setSelectedMethod("bank");
-                      form.setValue("withdrawalMethod", "bank");
-                    }}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition mb-3 ${
-                      selectedMethod === "bank"
-                        ? "border-[#C9A84C] bg-[#1A1A2E]"
-                        : "border-[#C9A84C]/20 bg-[#1A1A2E] hover:border-[#C9A84C]/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded bg-[#C9A84C]/20 flex items-center justify-center">
-                        <span className="text-lg">🏦</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-bold text-white">Rút về tài khoản ngân hàng</p>
-                        <p className="text-xs text-white/50">1-24 giờ</p>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border-2 ${selectedMethod === "bank" ? "bg-[#C9A84C] border-[#C9A84C]" : "border-[#C9A84C]/30"}`} />
+                {method === "bank" && (
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 7 }}>
+                      {banks.map(b => (
+                        <button key={b.id} onClick={() => setSelectedBank(b.id)}
+                          style={{
+                            height: 44, borderRadius: 8, cursor: "pointer",
+                            background: selectedBank === b.id ? `${b.color}22` : "rgba(255,255,255,0.04)",
+                            border: `1px solid ${selectedBank === b.id ? b.color : "rgba(255,255,255,0.08)"}`,
+                            fontSize: 12, fontWeight: 700,
+                            color: selectedBank === b.id ? "#fff" : "rgba(255,255,255,0.5)", transition: "all 0.15s",
+                          }}>{b.short}</button>
+                      ))}
                     </div>
-                  </div>
+                    <input placeholder="Số tài khoản" value={accountNumber} onChange={e => setAccountNumber(e.target.value)}
+                      style={{ height: 44, borderRadius: 10, background: "#1A1A2E", border: "1px solid rgba(201,168,76,0.2)", color: "#fff", padding: "0 12px", fontSize: 13, outline: "none", width: "100%", boxSizing: "border-box" }} />
+                    <input placeholder="Tên chủ tài khoản" value={accountHolder} onChange={e => setAccountHolder(e.target.value)}
+                      style={{ height: 44, borderRadius: 10, background: "#1A1A2E", border: "1px solid rgba(201,168,76,0.2)", color: "#fff", padding: "0 12px", fontSize: 13, outline: "none", width: "100%", boxSizing: "border-box" }} />
+                  </motion.div>
+                )}
 
-                  {/* Bank Selection */}
-                  {selectedMethod === "bank" && (
-                    <div className="mb-4 space-y-2 bg-[#1A1A2E] border border-[#C9A84C]/10 rounded-lg p-3">
-                      <p className="text-xs font-bold text-white/60">Chọn ngân hàng</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {bankOptions.map(bank => (
-                          <button
-                            key={bank.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedBank(bank.id);
-                              form.setValue("bankName", bank.name);
-                            }}
-                            className={`py-2 px-2 text-xs font-bold rounded border transition ${
-                              selectedBank === bank.id
-                                ? "bg-[#C9A84C]/20 border-[#C9A84C]"
-                                : "bg-[#0D0D1A] border-[#C9A84C]/20 hover:border-[#C9A84C]/50"
-                            }`}
-                          >
-                            {bank.shortName}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Bank Details */}
-                  {selectedMethod === "bank" && selectedBank && (
-                    <div className="space-y-3 mb-4 bg-[#1A1A2E] border border-[#C9A84C]/10 rounded-lg p-3">
-                      <FormField
-                        control={form.control}
-                        name="accountNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                placeholder="Số tài khoản"
-                                className="h-10 bg-[#0D0D1A] border border-[#C9A84C]/30 text-white placeholder:text-white/30 focus:border-[#C9A84C]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="text-xs text-[#C0272D]" />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="accountHolder"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                placeholder="Tên chủ tài khoản"
-                                className="h-10 bg-[#0D0D1A] border border-[#C9A84C]/30 text-white placeholder:text-white/30 focus:border-[#C9A84C]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="text-xs text-[#C0272D]" />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-
-                  {/* E-wallet Withdrawal */}
-                  <div
-                    onClick={() => {
-                      setSelectedMethod("ewallet");
-                      form.setValue("withdrawalMethod", "ewallet");
-                    }}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition ${
-                      selectedMethod === "ewallet"
-                        ? "border-[#C9A84C] bg-[#1A1A2E]"
-                        : "border-[#C9A84C]/20 bg-[#1A1A2E] hover:border-[#C9A84C]/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded bg-[#C9A84C]/20 flex items-center justify-center">
-                        <span className="text-lg">💳</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-bold text-white">Rút về ví điện tử</p>
-                        <p className="text-xs text-white/50">Momo, ZaloPay</p>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border-2 ${selectedMethod === "ewallet" ? "bg-[#C9A84C] border-[#C9A84C]" : "border-[#C9A84C]/30"}`} />
-                    </div>
-                  </div>
-
-                  {/* E-wallet Selection */}
-                  {selectedMethod === "ewallet" && (
-                    <div className="mt-3 grid grid-cols-2 gap-2 mb-4">
-                      {ewalletMethods.map(method => (
-                        <button
-                          key={method.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedEwallet(method.id);
-                            form.setValue("ewalletType", method.id);
-                          }}
-                          className={`p-3 rounded-lg border-2 transition ${
-                            selectedEwallet === method.id
-                              ? "border-[#C9A84C] bg-[#1A1A2E]"
-                              : "border-[#C9A84C]/20 bg-[#1A1A2E] hover:border-[#C9A84C]/50"
-                          }`}
-                        >
-                          <p className="text-lg mb-1">{method.icon}</p>
-                          <p className="text-xs font-bold text-white">{method.name}</p>
+                {method === "ewallet" && (
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      {ewallets.map(e => (
+                        <button key={e.id} onClick={() => setSelectedEwallet(e.id)}
+                          style={{
+                            height: 48, borderRadius: 10, cursor: "pointer",
+                            background: selectedEwallet === e.id ? `${e.color}22` : "rgba(255,255,255,0.04)",
+                            border: `1px solid ${selectedEwallet === e.id ? e.color : "rgba(255,255,255,0.08)"}`,
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                            fontSize: 13, fontWeight: 700,
+                            color: selectedEwallet === e.id ? "#fff" : "rgba(255,255,255,0.5)", transition: "all 0.15s",
+                          }}>
+                          <span style={{ fontSize: 20 }}>{e.emoji}</span> {e.name}
                         </button>
                       ))}
                     </div>
-                  )}
-
-                  {/* E-wallet Phone */}
-                  {selectedMethod === "ewallet" && selectedEwallet && (
-                    <div className="mb-4">
-                      <FormField
-                        control={form.control}
-                        name="ewalletPhone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                placeholder="Số điện thoại"
-                                className="h-10 bg-[#1A1A2E] border border-[#C9A84C]/30 text-white placeholder:text-white/30 focus:border-[#C9A84C]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="text-xs text-[#C0272D]" />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-12 text-md font-bold bg-gradient-to-br from-[#C9A84C] to-[#E8C96A] text-[#0D0D1A] hover:opacity-90 border-none mt-6"
-                  disabled={!form.watch("withdrawalMethod") || !form.watch("amount")}
-                >
-                  TIẾP TỤC
-                </Button>
-              </form>
-            </Form>
-          </>
-        ) : (
-          <>
-            {/* Confirmation Summary */}
-            <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-xl p-4 mb-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-white/60">Số tiền rút</span>
-                  <span className="text-xl font-bold text-[#C9A84C]">{Number(form.watch("amount")).toLocaleString("vi-VN")} ₫</span>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-[#C9A84C]/10">
-                  <span className="text-sm text-white/60">Phí xử lý</span>
-                  <span className="text-sm font-bold text-white">Miễn phí</span>
-                </div>
+                    <input placeholder="Số điện thoại ví" value={ewalletPhone} onChange={e => setEwalletPhone(e.target.value)}
+                      style={{ height: 44, borderRadius: 10, background: "#1A1A2E", border: "1px solid rgba(201,168,76,0.2)", color: "#fff", padding: "0 12px", fontSize: 13, outline: "none", width: "100%", boxSizing: "border-box" }} />
+                  </motion.div>
+                )}
               </div>
-            </div>
 
-            {/* Bank Details Display */}
-            {selectedMethod === "bank" && (
-              <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-4 mb-4 space-y-2">
-                <p className="text-xs font-bold text-white/60">Thông tin tài khoản</p>
-                <div>
-                  <p className="text-xs text-white/50">Ngân hàng</p>
-                  <p className="font-bold text-white">{form.watch("bankName")}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-white/50">Số tài khoản</p>
-                  <p className="font-bold text-white">{form.watch("accountNumber")}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-white/50">Chủ tài khoản</p>
-                  <p className="font-bold text-white">{form.watch("accountHolder")}</p>
-                </div>
+              <button onClick={handleSubmit} disabled={!valid}
+                style={{
+                  width: "100%", height: 50, borderRadius: 12, border: "none", cursor: valid ? "pointer" : "not-allowed",
+                  background: valid ? "linear-gradient(135deg,#2EC97C,#34d399)" : "rgba(255,255,255,0.08)",
+                  fontFamily: "'Oswald',sans-serif", fontSize: 16, fontWeight: 700, letterSpacing: "0.05em",
+                  color: valid ? "#0D0D1A" : "rgba(255,255,255,0.3)", transition: "all 0.2s",
+                }}>
+                TIẾP TỤC
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div key="confirm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div style={{ background: "rgba(46,201,124,0.06)", border: "1px solid rgba(46,201,124,0.2)", borderRadius: 12, padding: 14, marginBottom: 14 }}>
+                <div style={{ fontSize: 11, color: "#2EC97C", fontWeight: 700, letterSpacing: "0.1em", marginBottom: 10, textTransform: "uppercase" }}>Xác nhận rút tiền</div>
+                {[
+                  { label: "Số tiền rút", value: `${numAmount.toLocaleString("vi-VN")} VND` },
+                  { label: "Phương thức", value: method === "bank" ? `${banks.find(b=>b.id===selectedBank)?.name}` : `${ewallets.find(e=>e.id===selectedEwallet)?.name}` },
+                  ...(method === "bank" ? [
+                    { label: "Số tài khoản", value: accountNumber },
+                    { label: "Chủ tài khoản", value: accountHolder },
+                  ] : [
+                    { label: "Số điện thoại", value: ewalletPhone },
+                  ]),
+                ].map(row => (
+                  <div key={row.label} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{row.label}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{row.value}</span>
+                  </div>
+                ))}
               </div>
-            )}
 
-            {/* E-wallet Details Display */}
-            {selectedMethod === "ewallet" && (
-              <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-lg p-4 mb-4 space-y-2 text-center">
-                <p className="text-2xl mb-2">{ewalletMethods.find(m => m.id === selectedEwallet)?.icon}</p>
-                <p className="font-bold text-white mb-3">{ewalletMethods.find(m => m.id === selectedEwallet)?.name}</p>
-                <div>
-                  <p className="text-xs text-white/50">Số điện thoại</p>
-                  <p className="font-bold text-white">{form.watch("ewalletPhone")}</p>
-                </div>
+              <div style={{ background: "rgba(255,165,0,0.08)", border: "1px solid rgba(255,165,0,0.2)", borderRadius: 10, padding: "10px 12px", marginBottom: 16, fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>
+                ⚠️ Vui lòng kiểm tra kỹ thông tin trước khi xác nhận. Yêu cầu sẽ được xử lý trong <strong style={{ color: "#F5D787" }}>5–15 phút</strong>.
               </div>
-            )}
 
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4">
-              <p className="text-xs text-blue-100">
-                <span className="font-bold">Lưu ý:</span> Yêu cầu rút tiền sẽ được xử lý trong 1-24 giờ. Vui lòng không đóng ứng dụng cho đến khi quá trình hoàn tất.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                onClick={() => {
-                  setStep("select");
-                  setSelectedMethod(null);
-                  setSelectedBank(null);
-                  setSelectedEwallet(null);
-                }}
-                className="flex-1 h-12 text-md font-bold bg-[#1A1A2E] border border-[#C9A84C]/30 text-[#C9A84C] hover:border-[#C9A84C]"
-              >
-                QUAY LẠI
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  toast.success("Yêu cầu rút tiền đã được gửi!");
-                  setStep("select");
-                  setSelectedMethod(null);
-                  setSelectedBank(null);
-                  setSelectedEwallet(null);
-                  form.reset();
-                }}
-                className="flex-1 h-12 text-md font-bold bg-gradient-to-br from-[#C9A84C] to-[#E8C96A] text-[#0D0D1A] hover:opacity-90 border-none"
-              >
-                XÁC NHẬN RÚT TIỀN
-              </Button>
-            </div>
-          </>
-        )}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <button onClick={() => setStep("form")}
+                  style={{ height: 48, borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.6)" }}>
+                  QUAY LẠI
+                </button>
+                <button onClick={handleConfirm}
+                  style={{ height: 48, borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2EC97C,#34d399)", cursor: "pointer", fontFamily: "'Oswald',sans-serif", fontSize: 14, fontWeight: 700, color: "#0D0D1A" }}>
+                  XÁC NHẬN
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Layout>
   );

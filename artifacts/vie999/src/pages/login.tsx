@@ -1,122 +1,199 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Layout } from "@/components/layout/layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { User, Lock, Eye, EyeOff } from "lucide-react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
-
-const loginSchema = z.object({
-  username: z.string().min(4, "Tên đăng nhập ít nhất 4 ký tự"),
-  password: z.string().min(6, "Mật khẩu ít nhất 6 ký tự"),
-});
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const [showPassword, setShowPassword] = useState(false);
-  
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-    },
-  });
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw]     = useState(false);
+  const [loading, setLoading]   = useState(false);
 
-  function onSubmit(values: z.infer<typeof loginSchema>) {
-    // Mock login
-    toast.success("Đăng nhập thành công!");
-    setLocation("/");
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username || !password) { toast.error("Vui lòng điền đầy đủ thông tin"); return; }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      toast.success("Đăng nhập thành công!");
+      setLocation("/");
+    }, 1200);
+  };
 
   return (
-    <Layout>
-      <div className="p-6 pt-10 flex flex-col min-h-[calc(100vh-140px)]">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#1A1A2E] border border-[#C9A84C]/30 shadow-[0_0_20px_rgba(201,168,76,0.15)] mb-4">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5">
-              <path d="M2 22h20M2 18l4-10 4 4 2-6 2 6 4-4 4 10H2z" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <h1 className="text-3xl font-black mb-2" style={{ fontFamily: "'Oswald', sans-serif", background: "linear-gradient(135deg, #C9A84C, #F5D787)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>ĐĂNG NHẬP</h1>
-          <p className="text-sm text-white/60">Chào mừng trở lại với HUYNH THUONG</p>
-        </div>
+    <div style={{
+      minHeight: "100dvh", background: "#0D0D1A",
+      display: "flex", justifyContent: "center",
+    }}>
+      <div style={{ width: "100%", maxWidth: 480, display: "flex", flexDirection: "column", minHeight: "100dvh", position: "relative", overflow: "hidden" }}>
 
-        <div className="bg-[#1A1A2E] border border-[#C9A84C]/20 rounded-xl p-5 shadow-lg">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-5 w-5 text-white/40" />
-                        <Input 
-                          placeholder="Tên đăng nhập" 
-                          className="pl-10 h-12 bg-[#0D0D1A] border-[#C9A84C]/30 text-white placeholder:text-white/30 focus:border-[#C9A84C] focus:ring-[#C9A84C]/20" 
-                          data-testid="input-username"
-                          {...field} 
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage className="text-xs text-[#C0272D]" />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-5 w-5 text-white/40" />
-                        <Input 
-                          type={showPassword ? "text" : "password"} 
-                          placeholder="Mật khẩu" 
-                          className="pl-10 pr-10 h-12 bg-[#0D0D1A] border-[#C9A84C]/30 text-white placeholder:text-white/30 focus:border-[#C9A84C] focus:ring-[#C9A84C]/20" 
-                          data-testid="input-password"
-                          {...field} 
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-3 text-white/40 hover:text-white"
-                        >
-                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage className="text-xs text-[#C0272D]" />
-                  </FormItem>
-                )}
-              />
+        {/* Background decoration */}
+        <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(201,168,76,0.04)", filter: "blur(40px)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -40, left: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(192,39,45,0.04)", filter: "blur(30px)", pointerEvents: "none" }} />
 
-              <div className="flex justify-end">
-                <a href="#" className="text-xs text-[#C9A84C] hover:underline">Quên mật khẩu?</a>
-              </div>
-              
-              <Button type="submit" className="w-full h-12 text-md font-bold bg-gradient-to-br from-[#C9A84C] to-[#E8C96A] text-[#0D0D1A] hover:opacity-90 border-none mt-2" data-testid="button-submit-login">
-                ĐĂNG NHẬP
-              </Button>
-            </form>
-          </Form>
-        </div>
-        
-        <div className="mt-8 text-center text-sm text-white/60">
-          Chưa có tài khoản?{" "}
-          <Link href="/register" className="text-[#C9A84C] font-bold hover:underline">
-            Đăng ký ngay
+        {/* Back button */}
+        <div style={{ padding: "16px 14px 0" }}>
+          <Link href="/">
+            <button style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Trang chủ
+            </button>
           </Link>
         </div>
+
+        {/* Logo area */}
+        <div style={{ textAlign: "center", padding: "28px 20px 24px" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 64, height: 64, borderRadius: 16, marginBottom: 14,
+            background: "linear-gradient(135deg,#1A1A2E,#0D0D1A)",
+            border: "1px solid rgba(201,168,76,0.3)",
+            boxShadow: "0 0 30px rgba(201,168,76,0.15)",
+            fontSize: 28,
+          }}>
+            🎰
+          </div>
+          <div style={{
+            fontFamily: "'Oswald',sans-serif", fontSize: 26, fontWeight: 700,
+            background: "linear-gradient(135deg,#C9A84C,#F5D787)",
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+            backgroundClip: "text", letterSpacing: "0.06em", lineHeight: 1.1,
+          }}>
+            HUYNH THUONG
+          </div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>
+            Chào mừng trở lại
+          </div>
+        </div>
+
+        {/* Form card */}
+        <div style={{ margin: "0 14px", background: "#13131F", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 16, padding: "20px 16px 24px" }}>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+            {/* Username */}
+            <div>
+              <label style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontWeight: 700, display: "block", marginBottom: 6, letterSpacing: "0.06em" }}>
+                TÊN ĐĂNG NHẬP
+              </label>
+              <div style={{ position: "relative" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)"
+                  style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+                <input
+                  data-testid="input-username"
+                  type="text"
+                  placeholder="Nhập tên đăng nhập"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  style={{
+                    width: "100%", height: 48, paddingLeft: 38, paddingRight: 12, boxSizing: "border-box",
+                    background: "#0D0D1A", border: "1px solid rgba(201,168,76,0.2)",
+                    borderRadius: 10, color: "#fff", fontSize: 14, outline: "none",
+                    transition: "border-color 0.15s",
+                  }}
+                  onFocus={e => (e.target.style.borderColor = "rgba(201,168,76,0.6)")}
+                  onBlur={e => (e.target.style.borderColor = "rgba(201,168,76,0.2)")}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontWeight: 700, display: "block", marginBottom: 6, letterSpacing: "0.06em" }}>
+                MẬT KHẨU
+              </label>
+              <div style={{ position: "relative" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)"
+                  style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                </svg>
+                <input
+                  data-testid="input-password"
+                  type={showPw ? "text" : "password"}
+                  placeholder="Nhập mật khẩu"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  style={{
+                    width: "100%", height: 48, paddingLeft: 38, paddingRight: 44, boxSizing: "border-box",
+                    background: "#0D0D1A", border: "1px solid rgba(201,168,76,0.2)",
+                    borderRadius: 10, color: "#fff", fontSize: 14, outline: "none",
+                    transition: "border-color 0.15s",
+                  }}
+                  onFocus={e => (e.target.style.borderColor = "rgba(201,168,76,0.6)")}
+                  onBlur={e => (e.target.style.borderColor = "rgba(201,168,76,0.2)")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(p => !p)}
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.35)", padding: 2 }}
+                >
+                  {showPw
+                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
+              <div style={{ textAlign: "right", marginTop: 6 }}>
+                <a href="#" style={{ fontSize: 12, color: "rgba(201,168,76,0.7)" }}>Quên mật khẩu?</a>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              data-testid="button-submit-login"
+              type="submit"
+              disabled={loading}
+              style={{
+                width: "100%", height: 50, borderRadius: 12, border: "none", cursor: loading ? "wait" : "pointer",
+                background: loading ? "rgba(201,168,76,0.5)" : "linear-gradient(135deg,#C9A84C,#F5D787)",
+                fontFamily: "'Oswald',sans-serif", fontSize: 16, fontWeight: 700,
+                color: "#0D0D1A", letterSpacing: "0.06em",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                transition: "all 0.2s",
+              }}
+            >
+              {loading ? (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0D0D1A" strokeWidth="2.5"
+                    style={{ animation: "spin 0.8s linear infinite" }}>
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Đang đăng nhập...
+                </>
+              ) : "ĐĂNG NHẬP"}
+            </button>
+          </form>
+        </div>
+
+        {/* Divider */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px" }}>
+          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>hoặc</span>
+          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+        </div>
+
+        {/* Register CTA */}
+        <div style={{ margin: "0 14px" }}>
+          <Link href="/register">
+            <button style={{
+              width: "100%", height: 48, borderRadius: 12, cursor: "pointer",
+              background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.2)",
+              fontFamily: "'Oswald',sans-serif", fontSize: 14, fontWeight: 700,
+              color: "#C9A84C", letterSpacing: "0.05em",
+            }}>
+              ĐĂNG KÝ TÀI KHOẢN MỚI
+            </button>
+          </Link>
+          <p style={{ textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 12, lineHeight: 1.5 }}>
+            Bằng cách đăng nhập, bạn đồng ý với{" "}
+            <a href="#" style={{ color: "rgba(201,168,76,0.6)" }}>Điều khoản</a> &{" "}
+            <a href="#" style={{ color: "rgba(201,168,76,0.6)" }}>Chính sách</a> của HUYNH THUONG
+          </p>
+        </div>
+
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
-    </Layout>
+    </div>
   );
 }
